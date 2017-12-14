@@ -1,6 +1,6 @@
 #include "remote_controller.h"
 #include "stream_controller.h"
-#include "graphics.h"
+#include "grafika.c"
 
 static inline void textColor(int32_t attr, int32_t fg, int32_t bg)
 {
@@ -55,9 +55,6 @@ int main()
 
     /* deinitialize stream controller module */
     ERRORCHECK(streamControllerDeinit());
-    
-    /* draw channel number banner */
-    draw();
   
     return 0;
 }
@@ -80,10 +77,18 @@ void remoteControllerCallback(uint16_t code, uint16_t type, uint32_t value)
 		case KEYCODE_P_PLUS:
 			printf("\nCH+ pressed\n");
             channelUp();
+            //draw();
 			break;
 		case KEYCODE_P_MINUS:
 		    printf("\nCH- pressed\n");
+		    //draw();
             channelDown();
+			break;
+		case 63:
+			drawVolume('+');
+			break;
+		case 64:
+			drawVolume('-');
 			break;
 		case KEYCODE_EXIT:
 			printf("\nExit pressed\n");

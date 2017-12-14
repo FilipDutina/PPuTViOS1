@@ -1,21 +1,74 @@
-#include "graphics.h"
+#include "grafika.h"
 
-static timer_t timerId;
-static IDirectFBSurface *primary = NULL;
-IDirectFB *dfbInterface = NULL;
-static int32_t screenWidth = 0;
-static int32_t screenHeight = 0;
+/*
 
-static struct itimerspec timerSpec;
-static struct itimerspec timerSpecOld;
-
-/*                                                           
 
 
 */
 
-void drawKeycode(int32_t keycode){
+void drawVolume(char sign)
+{
+	int32_t ret;
+    int32_t i;
+    IDirectFBFont *fontInterface = NULL;
+    DFBFontDescription fontDesc;
+    char keycodeString[1];
+    
+    if(sign == '+')
+    	 keycodeString[0] = '+';
+   	else
+   		 keycodeString[0] = '-';
+
+	/* clear the buffer before drawing */
+    
+    DFBCHECK(primary->SetColor(primary, 0x00, 0x00, 0x00, 0x00));
+    DFBCHECK(primary->FillRectangle(primary, 0, 0, screenWidth, screenHeight));
+    
+    
+     /* draw keycode */
+    
+	fontDesc.flags = DFDESC_HEIGHT;
+	fontDesc.height = FONT_HEIGHT;
+	
+	DFBCHECK(dfbInterface->CreateFont(dfbInterface, "/home/galois/fonts/DejaVuSans.ttf", &fontDesc, &fontInterface));
+	DFBCHECK(primary->SetFont(primary, fontInterface));
+	
+	/* generate keycode string */
+	//sprintf(keycodeString,"%d",keycode);
+
+	/* draw the string */
+	DFBCHECK(primary->SetColor(primary, 0xff, 0xff, 0xff, 0xff));
+	DFBCHECK(primary->DrawString(primary, keycodeString, -1, screenWidth/50, screenHeight/50+FONT_HEIGHT/20, DSTF_CENTER));
+	
+	
+	//DFBCHECK(primary->Flip(primary, NULL, 0));
+	
+	 /* update screen */
+    DFBCHECK(primary->Flip(primary, NULL, 0));
+    
+    
+    /* set the timer for clearing the screen */
+    
+    memset(&timerSpec,0,sizeof(timerSpec));
+    
+    /* specify the timer timeout time */
+    timerSpec.it_value.tv_sec = 3;
+    timerSpec.it_value.tv_nsec = 0;
+    
+    /* set the new timer specs */
+    ret = timer_settime(timerId,0,&timerSpec,&timerSpecOld);
+    if(ret == -1){
+        printf("Error setting timer in %s!\n", __FUNCTION__);
+    }
+    
+    printf("drawVolume");
+
+}
+
+void drawKeycode(int32_t keycode)
+{
     int32_t ret;
+    int32_t i;
     IDirectFBFont *fontInterface = NULL;
     DFBFontDescription fontDesc;
     char keycodeString[4];
@@ -23,33 +76,54 @@ void drawKeycode(int32_t keycode){
     
     /* clear the buffer before drawing */
     
-    DFBCHECK(primary->SetColor(primary, 0x00, 0x00, 0x00, 0xff));
+    DFBCHECK(primary->SetColor(primary, 0x00, 0x00, 0x00, 0x00));
     DFBCHECK(primary->FillRectangle(primary, 0, 0, screenWidth, screenHeight));
     
     
-    /*  draw the frame */
-    
-    DFBCHECK(primary->SetColor(primary, 0x40, 0x10, 0x80, 0xff));
-    DFBCHECK(primary->FillRectangle(primary, screenWidth/3, screenHeight/3, screenWidth/3, screenHeight/3));
-    
-    DFBCHECK(primary->SetColor(primary, 0x80, 0x40, 0x10, 0xff));
-    DFBCHECK(primary->FillRectangle(primary, screenWidth/3+FRAME_THICKNESS, screenHeight/3+FRAME_THICKNESS, screenWidth/3-2*FRAME_THICKNESS, screenHeight/3-2*FRAME_THICKNESS));
-    
-    
-    /* draw keycode */
+     /* draw keycode */
     
 	fontDesc.flags = DFDESC_HEIGHT;
 	fontDesc.height = FONT_HEIGHT;
 	
 	DFBCHECK(dfbInterface->CreateFont(dfbInterface, "/home/galois/fonts/DejaVuSans.ttf", &fontDesc, &fontInterface));
 	DFBCHECK(primary->SetFont(primary, fontInterface));
+	
+	/* generate keycode string */
+	sprintf(keycodeString,"%d",keycode);
     
-    /* generate keycode string */
-    sprintf(keycodeString,"%d",keycode);
     
-    /* draw the string */
-    DFBCHECK(primary->SetColor(primary, 0x10, 0x80, 0x40, 0xff));
-	DFBCHECK(primary->DrawString(primary, keycodeString, -1, screenWidth/2, screenHeight/2+FONT_HEIGHT/2, DSTF_CENTER));
+    /*  draw the frame */
+    
+    for(i = 0x00; i < 0xff; i++)
+    {
+    	DFBCHECK(primary->SetColor(primary, 0x40, 0x10, 0x80, i));
+		DFBCHECK(primary->FillRectangle(primary, 0, 0, screenWidth/10, screenHeight/10));
+		
+		DFBCHECK(primary->SetColor(primary, 0x80, 0x40, 0x10, i));
+		DFBCHECK(primary->FillRectangle(primary, FRAME_THICKNESS, FRAME_THICKNESS, screenWidth/10-2*FRAME_THICKNESS, screenHeight/10-2*FRAME_THICKNESS));
+		
+		/* draw the string */
+		DFBCHECK(primary->SetColor(primary, 0x10, 0x80, 0x40, i));
+		DFBCHECK(primary->DrawString(primary, keycodeString, -1, screenWidth/20, screenHeight/15+FONT_HEIGHT/20, DSTF_CENTER));
+		
+		
+		DFBCHECK(primary->Flip(primary, NULL, 0));
+		
+		i += 8;
+    }
+	
+	 //DFBCHECK(primary->SetColor(/*surface to draw on*/ primary,
+                              // /*red*/ 0x00,
+                              // /*green*/ 0x00,
+                              // /*blue*/ 0x00,
+                              // /*alpha*/ 0xff));
+    //DFBCHECK(primary->FillRectangle(/*surface to draw on*/ primary,
+                               // /*upper left x coordinate*/ 0,
+                              //  /*upper left y coordinate*/ 0,
+                               // /*rectangle width*/ screenWidth,
+                               // /*rectangle height*/ screenHeight));
+	
+	
     
     
     /* update screen */
@@ -69,9 +143,11 @@ void drawKeycode(int32_t keycode){
     if(ret == -1){
         printf("Error setting timer in %s!\n", __FUNCTION__);
     }
+    printf("drawKeycode\n");
 }
 
 /*
+
 
 
 */
@@ -80,7 +156,7 @@ void wipeScreen(union sigval signalArg){
     int32_t ret;
 
     /* clear screen */
-    DFBCHECK(primary->SetColor(primary, 0x00, 0x00, 0x00, 0xff));
+    DFBCHECK(primary->SetColor(primary, 0x00, 0x00, 0x00, 0x00));
     DFBCHECK(primary->FillRectangle(primary, 0, 0, screenWidth, screenHeight));
     
     /* update screen */
@@ -92,14 +168,17 @@ void wipeScreen(union sigval signalArg){
     if(ret == -1){
         printf("Error setting timer in %s!\n", __FUNCTION__);
     }
+    printf("wipeScreen\n");
 }
+
 
 /*
 
 
+
 */
 
-void draw()
+void draw(int32_t channelNumber)
 {
 	DFBSurfaceDescription surfaceDesc;
     
@@ -161,21 +240,22 @@ void draw()
     ioctl(inputFileDesc, EVIOCGNAME(sizeof(deviceName)), deviceName);
 	printf("RC device opened succesfully [%s]\n", deviceName);
     
-    do{
-        ret = read(inputFileDesc,&event,(size_t)sizeof(struct input_event));
+    //do{
+     //   ret = read(inputFileDesc,&event,(size_t)sizeof(struct input_event));
         
         /*  only react if we've read something and only on "press down" */
-        if(ret > 0){
-            if(event.value == 1){
+       // if(ret > 0){
+           // if(event.value == 1){
                 /* draw the keycode */
-                drawKeycode(event.code);
-            }
-        }
-    }while(/*event.code != EXIT_BUTTON_KEYCODE*/1);
+                drawKeycode(channelNumber);
+           // }
+        //}
+   // }while(event.code != EXIT_BUTTON_KEYCODE);
 	
     
     /* clean up */
-    timer_delete(timerId);
+    /*timer_delete(timerId);
 	primary->Release(primary);
 	dfbInterface->Release(dfbInterface);
+	printf("draw\n");*/
 }

@@ -1,4 +1,5 @@
 #include "stream_controller.h"
+#include "grafika.c"
 
 static PatTable *patTable;
 static PmtTable *pmtTable;
@@ -138,7 +139,6 @@ StreamControllerError getChannelInfo(ChannelInfo* channelInfo)
  */
 void startChannel(int32_t channelNumber)
 {
-    
     /* free PAT table filter */
     Demux_Free_Filter(playerHandle, filterHandle);
     
@@ -214,6 +214,8 @@ void startChannel(int32_t channelNumber)
     currentChannel.programNumber = channelNumber + 1;
     currentChannel.audioPid = audioPid;
     currentChannel.videoPid = videoPid;
+    
+    draw(channelNumber + 1);
 }
 
 void* streamControllerTask()

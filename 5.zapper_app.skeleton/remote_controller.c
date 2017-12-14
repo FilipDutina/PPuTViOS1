@@ -35,7 +35,7 @@ RemoteControllerError registerRemoteControllerCallback(RemoteControllerCallback 
 {
     // TODO: implement
     
-    if(callback != 0)
+    if(callback != NULL)
     {
     	printf("registerRemoteControllerCallback failure, callback already registered!\n");
     	return RC_ERROR;
@@ -50,21 +50,19 @@ RemoteControllerError unregisterRemoteControllerCallback(RemoteControllerCallbac
     
 	// TODO: implement
 	
-	if(callback == 0)
+	if(callback == NULL)
     {
     	printf("registerRemoteControllerCallback failure, callback already unregistered!\n");
     	return RC_ERROR;
     }
-    else if(callback != 0)
+    else if(callback != remoteControllerCallback)
     {
     	printf("registerRemoteControllerCallback failure, callback already registered!\n");
     	return RC_ERROR;
     }
-    else
-    {
-    	callback = remoteControllerCallback;
-   		return RC_NO_ERROR;
-    }
+    
+    callback = NULL;
+    return RC_NO_ERROR;
 }
 
 void* inputEventTask()
