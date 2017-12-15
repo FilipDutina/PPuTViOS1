@@ -14,6 +14,10 @@
 #define DESIRED_FREQUENCY 754000000	        /* Tune frequency in Hz */
 #define BANDWIDTH 8    				        /* Bandwidth in Mhz */
 
+/* po defaultu utisano (za sada) */
+static uint8_t volumeState = 0;
+static bool muteFlag = false;
+
 /**
  * @brief Structure that defines stream controller error
  */
@@ -68,6 +72,15 @@ StreamControllerError channelDown();
  * @param [out] channelInfo - channel info structure with current channel info
  * @return stream controller error code
  */
+ 
+StreamControllerError volumeUp();
+ 
+StreamControllerError volumeDown();
+ 
+StreamControllerError mute();
+
+StreamControllerError info(uint16_t programNumber, uint16_t audioPid, uint16_t videoPid);
+
 StreamControllerError getChannelInfo(ChannelInfo* channelInfo);
 
 #endif /* __STREAM_CONTROLLER_H__ */

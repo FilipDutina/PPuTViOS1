@@ -118,6 +118,57 @@ StreamControllerError channelDown()
     return SC_NO_ERROR;
 }
 
+StreamControllerError volumeUp()
+{
+	if(volumeState < 10)
+	{
+		volumeState++;
+		muteFlag = false;
+	}
+	
+	//poziv funkcije za crtanje 
+	/*funkciji za crtanje kao parametar saljes volumeState i na osnovu toga ce znati koju sliku da iscrta*/
+	drawVolumeState(volumeState);
+		
+	return SC_NO_ERROR;
+}
+
+StreamControllerError volumeDown()
+{
+	if(volumeState > 0)
+	{
+		volumeState--;
+		muteFlag = false;
+	}
+	
+	//pozviv funkcije za crtanje
+	/*funkciji za crtanje kao parametar saljes volumeState i na osnovu toga ce znati koju sliku da iscrta*/
+	drawVolumeState(volumeState);
+	
+	return SC_NO_ERROR;
+}
+
+StreamControllerError mute()
+{
+	if(muteFlag)
+	{
+		drawVolumeState(volumeState);
+		muteFlag = false;
+	}
+	else
+	{
+		drawVolumeState(0);
+		muteFlag = true;
+	}
+	
+	return SC_NO_ERROR;
+}
+
+StreamControllerError info(uint16_t programNumber, uint16_t audioPid, uint16_t videoPid)
+{
+	showInfoBanner(programNumber, audioPid, videoPid);
+}
+
 StreamControllerError getChannelInfo(ChannelInfo* channelInfo)
 {
     if (channelInfo == NULL)
@@ -176,6 +227,7 @@ void startChannel(int32_t channelNumber)
         }
     }
 
+
     if (videoPid != -1) 
     {
         /* remove previous video stream */
@@ -191,6 +243,12 @@ void startChannel(int32_t channelNumber)
             printf("\n%s : ERROR Cannot create video stream\n", __FUNCTION__);
             streamControllerDeinit();
         }
+    }
+    else
+    {
+    	Player_Stream_Remove(playerHandle, sourceHandle, streamHandleV);
+        streamHandleV = 0;
+        MV_PE_ClearScreen(playerHandle, 1);
     }
 
     if (audioPid != -1)
@@ -215,7 +273,7 @@ void startChannel(int32_t channelNumber)
     currentChannel.audioPid = audioPid;
     currentChannel.videoPid = videoPid;
     
-    draw(channelNumber + 1);
+    drawChannelNumber(channelNumber + 1);
 }
 
 void* streamControllerTask()

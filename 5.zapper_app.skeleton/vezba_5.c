@@ -1,6 +1,5 @@
 #include "remote_controller.h"
 #include "stream_controller.h"
-#include "grafika.c"
 
 static inline void textColor(int32_t attr, int32_t fg, int32_t bg)
 {
@@ -72,23 +71,28 @@ void remoteControllerCallback(uint16_t code, uint16_t type, uint32_t value)
                 printf("Audio pid: %d\n", channelInfo.audioPid);
                 printf("Video pid: %d\n", channelInfo.videoPid);
                 printf("**********************************************************\n");
+                info(channelInfo.programNumber, channelInfo.audioPid, channelInfo.videoPid);
             }
 			break;
 		case KEYCODE_P_PLUS:
 			printf("\nCH+ pressed\n");
             channelUp();
-            //draw();
 			break;
 		case KEYCODE_P_MINUS:
 		    printf("\nCH- pressed\n");
-		    //draw();
             channelDown();
 			break;
-		case 63:
-			drawVolume('+');
+		case KEYCODE_VOLUME_UP:
+			printf("\nVOL+ pressed\n");
+			volumeUp();
 			break;
-		case 64:
-			drawVolume('-');
+		case KEYCODE_VOLUME_DOWN:
+			printf("\nVOL- pressed\n");
+			volumeDown();
+			break;
+		case KEYCODE_MUTE:
+			printf("\nMUTE pressed\n");
+			mute();
 			break;
 		case KEYCODE_EXIT:
 			printf("\nExit pressed\n");
