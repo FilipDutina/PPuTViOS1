@@ -20,7 +20,7 @@ static bool infoBannerInit = false;
 
 void* renderLoop()
 {
-	while(true)
+	while(graphicInit)
 	{
 		pthread_mutex_lock(&mutex);
 		if(graphicInit == 0)
@@ -365,11 +365,8 @@ void drawVolumeState(uint8_t volumeState)
                            /*destination x coordinate of the upper left corner of the image*/screenWidth - logoWidth - 50,
                            /*destination y coordinate of the upper left corner of the image*/20));
    
-   
-    /* switch between the displayed and the work buffer (update the display) */
-    DFBCHECK(primary->Flip(primary,
-                           /*region to be updated, NULL for the whole surface*/NULL,
-                           /*flip flags*/0));
+   	DFBCHECK(primary->Flip(primary, NULL, 0));
+    
 	printf("drawVolumeState 3\n");
     /* set the timer for clearing the screen */
     
@@ -471,7 +468,7 @@ void showInfoBanner()
     memset(&timerSpec,0,sizeof(timerSpec));
     
     /* specify the timer timeout time */
-    timerSpec.it_value.tv_sec = 3;
+    timerSpec.it_value.tv_sec = 5;
     timerSpec.it_value.tv_nsec = 0;
     
     /* set the new timer specs */

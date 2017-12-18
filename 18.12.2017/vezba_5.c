@@ -1,5 +1,6 @@
 #include "remote_controller.h"
 #include "stream_controller.h"
+#include "grafika.c"
 
 static inline void textColor(int32_t attr, int32_t fg, int32_t bg)
 {
@@ -29,7 +30,7 @@ static ChannelInfo channelInfo;
 
 int main()
 {
-    /* initialize remote controller module */
+	/* initialize remote controller module */
     ERRORCHECK(remoteControllerInit());
     
     /* register remote controller callback */
@@ -45,7 +46,7 @@ int main()
 		printf("\n%s : ERROR Lock timeout exceeded!\n", __FUNCTION__);
 	}
 	pthread_mutex_unlock(&deinitMutex);
-    
+	
     /* unregister remote controller callback */
     ERRORCHECK(unregisterRemoteControllerCallback(remoteControllerCallback));
 
