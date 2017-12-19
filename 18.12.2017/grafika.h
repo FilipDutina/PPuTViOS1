@@ -41,11 +41,53 @@ static int32_t screenHeight = 0;
 static struct itimerspec timerSpec;
 static struct itimerspec timerSpecOld;
 
+/**
+ * @brief  Inicijalizacija grafike.
+ * 
+ * @param  [in]   
+ * @param  [out]  
+ * @return tables 
+ */
 static void init();
+/**
+ * @brief  Deinicijalizacija grafike.
+ * 
+ * @param  [in]   
+ * @param  [out]  
+ * @return tables 
+ */
 static void deInit();
+/**
+ * @brief  Brisanje ekrana.
+ * 
+ * @param  [in]   
+ * @param  [out]  
+ * @return tables 
+ */
 static void wipeScreen(union sigval signalArg);
+/**
+ * @brief  Crtanje grafike za zvuk.
+ * 
+ * @param  [in]   
+ * @param  [out]  
+ * @return tables 
+ */
 static void drawVolumeState(uint8_t volumeState);
+/**
+ * @brief  Crtanje grafike za radio.
+ * 
+ * @param  [in]   
+ * @param  [out]  
+ * @return tables 
+ */
 static void drawRadio();
+/**
+ * @brief  Prikazivanje informacija za dati kanal.
+ * 
+ * @param  [in]   
+ * @param  [out]  
+ * @return tables 
+ */
 static void showInfoBanner();
 
 
