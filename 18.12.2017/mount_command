@@ -1,0 +1,1 @@
+mount -o port=2049,nolock,proto=tcp -t nfs 10.81.36.73:/home/student/pputvios1/ploca /mnt/PPUTVIOS_Student1

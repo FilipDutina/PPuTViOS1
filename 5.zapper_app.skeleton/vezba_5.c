@@ -85,14 +85,17 @@ void remoteControllerCallback(uint16_t code, uint16_t type, uint32_t value)
 		case KEYCODE_VOLUME_UP:
 			printf("\nVOL+ pressed\n");
 			volumeUp();
+			changeVolumeUp();
 			break;
 		case KEYCODE_VOLUME_DOWN:
 			printf("\nVOL- pressed\n");
 			volumeDown();
+			changeVolumeDown();
 			break;
 		case KEYCODE_MUTE:
 			printf("\nMUTE pressed\n");
 			mute();
+			changeVolumeToMute();
 			break;
 		case KEYCODE_EXIT:
 			printf("\nExit pressed\n");
@@ -100,6 +103,67 @@ void remoteControllerCallback(uint16_t code, uint16_t type, uint32_t value)
 		    pthread_cond_signal(&deinitCond);
 		    pthread_mutex_unlock(&deinitMutex);
 			break;
+		
+		case KEYCODE_0:
+
+	    	printf("\n0 pressed\n");
+        	changeChannelTo(0);
+			break;
+
+		case KEYCODE_1:
+
+	    	printf("\n1 pressed\n");
+        	changeChannelTo(1);
+			break;
+
+		case KEYCODE_2:
+
+	    	printf("\n2 pressed\n");
+        	changeChannelTo(2);
+			break;
+
+		case KEYCODE_3:
+
+	    	printf("\n3 pressed\n");
+        	changeChannelTo(3);
+			break;
+
+		case KEYCODE_4:
+
+	    	printf("\n4 pressed\n");
+        	changeChannelTo(4);
+			break;
+
+		case KEYCODE_5:
+
+	    	printf("\n5 pressed\n");
+        	changeChannelTo(5);
+			break;
+
+		case KEYCODE_6:
+
+	    	printf("\n6 pressed\n");
+        	changeChannelTo(6);
+			break;
+
+		case KEYCODE_7:
+
+	    	printf("\n7 pressed\n");
+        	changeChannelTo(7);
+			break;
+
+		case KEYCODE_8:
+
+	    	printf("\n8 pressed\n");
+        	changeChannelTo(8);
+			break;
+
+		case KEYCODE_9:
+
+	    	printf("\n9 pressed\n");
+        	changeChannelTo(9);
+			break;	
+		
 		default:
 			printf("\nPress P+, P-, info or exit! \n\n");
 	}

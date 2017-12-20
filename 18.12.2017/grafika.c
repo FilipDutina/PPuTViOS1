@@ -455,8 +455,13 @@ void showInfoBanner()
 	/* fade in efekat */
 	//for(j = 0x00; j < 0xff; j++)
 	//{
+	
+	/*upper left x coordinate*/
+    /*upper left y coordinate*/
+    /*rectangle width*/ 
+    /*rectangle height*/ 
 	DFBCHECK(primary->SetColor(primary, 0x33, 0x33, 0x33, 0xff));
-	DFBCHECK(primary->FillRectangle(primary, screenWidth/4, screenHeight - 160, screenWidth/2, 250));
+	DFBCHECK(primary->FillRectangle(primary, screenWidth/4, screenHeight - 160, screenWidth/2, 320));
 
 	DFBCHECK(primary->SetColor(primary, 0xff, 0x80, 0x40, 0xff));
 
@@ -467,12 +472,23 @@ void showInfoBanner()
 	DFBCHECK(primary->DrawString(primary, keycodeString, -1, screenWidth/4 + 400,  screenHeight - 130, DSTF_LEFT));
 
 	sprintf(keycodeString,"%d", currentChannel.videoPid);
-	DFBCHECK(primary->DrawString(primary,"VIDEO PID: ", -1, screenWidth/4 + 20,  screenHeight - 90, DSTF_LEFT));
-	DFBCHECK(primary->DrawString(primary, keycodeString, -1, screenWidth/4 + 400,  screenHeight - 90, DSTF_LEFT));
+	DFBCHECK(primary->DrawString(primary,"VIDEO PID: ", -1, screenWidth/4 + 20,  screenHeight - 100, DSTF_LEFT));
+	DFBCHECK(primary->DrawString(primary, keycodeString, -1, screenWidth/4 + 400,  screenHeight - 100, DSTF_LEFT));
 
 	sprintf(keycodeString,"%d", currentChannel.audioPid);
-	DFBCHECK(primary->DrawString(primary,"AUDIO PID: ", -1, screenWidth/4 + 20,  screenHeight - 50, DSTF_LEFT));
-	DFBCHECK(primary->DrawString(primary, keycodeString, -1, screenWidth/4 + 400,  screenHeight - 50, DSTF_LEFT));
+	DFBCHECK(primary->DrawString(primary,"AUDIO PID: ", -1, screenWidth/4 + 20,  screenHeight - 70, DSTF_LEFT));
+	DFBCHECK(primary->DrawString(primary, keycodeString, -1, screenWidth/4 + 400,  screenHeight - 70, DSTF_LEFT));
+	
+	sprintf(keycodeString,"%d", currentChannel.audioPid);
+	DFBCHECK(primary->DrawString(primary,"TELETEXT AVAILABLE: ", -1, screenWidth/4 + 20,  screenHeight - 40, DSTF_LEFT));
+	if(currentChannel.txt)
+	{
+		DFBCHECK(primary->DrawString(primary, "YES", -1, screenWidth/4 + 400,  screenHeight - 40, DSTF_LEFT));
+	}
+	else
+	{
+		DFBCHECK(primary->DrawString(primary, "NO", -1, screenWidth/4 + 400,  screenHeight - 40, DSTF_LEFT));
+	}
 
 	/* DODATI INFO O TRENUTNOJ EMISIJI */
 	DFBCHECK(primary->DrawString(primary,"TRENUTNA EMISIJA (treba uraditi...): ", -1, screenWidth/4 + 20,  screenHeight - 10, DSTF_LEFT));

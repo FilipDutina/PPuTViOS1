@@ -19,6 +19,9 @@ static bool changeChannel = false;
 static int16_t programNumber = 0;
 static ChannelInfo currentChannel;
 static bool isInitialized = false;
+static bool muteIsPressed = false;
+static bool initialPowerOn = true;
+static uint32_t volumeNumber = 0;
 
 static struct timespec lockStatusWaitTime;
 static struct timeval now;
@@ -28,6 +31,14 @@ static pthread_mutex_t demuxMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void* streamControllerTask();
 static void startChannel(int32_t channelNumber);
+
+static uint32_t desiredFrequency = 0;
+static int8_t bandwidth = 0;
+static int16_t  audioPid = 0;
+static int16_t  videoPid = 0;
+char module[8];
+char audioType[25];
+char videoType[20];
 
 
 StreamControllerError streamControllerInit()

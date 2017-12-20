@@ -19,6 +19,9 @@ static bool changeChannel = false;
 static int16_t programNumber = 0;
 static ChannelInfo currentChannel;
 static bool isInitialized = false;
+static uint32_t volumeNumber = 0;
+static bool muteIsPressed = false;
+static bool initialPowerOn = true;
 
 static struct timespec lockStatusWaitTime;
 static struct timeval now;
@@ -29,10 +32,27 @@ static pthread_mutex_t demuxMutex = PTHREAD_MUTEX_INITIALIZER;
 static void* streamControllerTask();
 static void startChannel(int32_t channelNumber);
 
+static uint32_t desiredFrequency = 0;
+static int8_t bandwidth = 0;
+static int16_t  audioPid = 0;
+static int16_t  videoPid = 0;
+char module[8];
+char audioType[25];
+char videoType[20];
+
 
 StreamControllerError streamControllerInit()
 {
+	parseConfigFile();
+	
+	if(configFileIsValid())
+	{
+		printf("Config file is not valid!\n");
+		return SC_ERROR;
+	}
+	
 	init();
+	
     if (pthread_create(&scThread, NULL, &streamControllerTask, NULL))
     {
         printf("Error creating input event task!\n");
@@ -101,7 +121,8 @@ StreamControllerError channelUp()
 
     /* set flag to start current channel */
     changeChannel = true;
-    infoBannerInit = true;
+    
+    //infoBannerInit = true;
 
     return SC_NO_ERROR;
 }
@@ -119,9 +140,52 @@ StreamControllerError channelDown()
    
     /* set flag to start current channel */
     changeChannel = true;
-    infoBannerInit = true;
+    
+    //infoBannerInit = true;
 
     return SC_NO_ERROR;
+}
+
+StreamControllerError changeChannelTo(int16_t channelNumber)
+{
+    programNumber = channelNumber - 1;
+ 
+    /* set flag to start current channel */
+    changeChannel = true;
+
+    return SC_NO_ERROR;
+}
+
+StreamControllerError changeVolumeDown()
+{
+	if(volumeNumber < 1)
+	{
+		volumeNumber = 0;	
+	}
+	else
+		volumeNumber--;
+
+	muteIsPressed = false;
+	
+	Player_Volume_Set(playerHandle, volumeNumber*CORECTION_FACTOR);
+
+    return SC_NO_ERROR;
+}
+
+StreamControllerError changeVolumeUp()
+{
+	volumeNumber++;
+	
+	if(volumeNumber > 10)
+	{
+		volumeNumber = 10;		
+	}
+
+	muteIsPressed = false;
+	
+	Player_Volume_Set(playerHandle, volumeNumber*CORECTION_FACTOR);
+
+	return SC_NO_ERROR;
 }
 
 StreamControllerError volumeUp()
@@ -155,6 +219,22 @@ StreamControllerError volumeDown()
 	//drawVolumeState(volumeState);
 	volumeInit = true;
 	
+	return SC_NO_ERROR;
+}
+
+StreamControllerError changeVolumeToMute()
+{	
+	if(muteIsPressed)
+	{	
+		muteIsPressed = false;
+		Player_Volume_Set(playerHandle, volumeNumber*CORECTION_FACTOR);	
+	}
+	else
+	{
+		muteIsPressed = true;
+		Player_Volume_Set(playerHandle, 0);
+	}	
+
 	return SC_NO_ERROR;
 }
 
@@ -207,7 +287,7 @@ void startChannel(int32_t channelNumber)
     Demux_Free_Filter(playerHandle, filterHandle);
     
     /* set demux filter for receive PMT table of program */
-    if(Demux_Set_Filter(playerHandle, patTable->patServiceInfoArray[channelNumber + 1].pid, 0x02, &filterHandle))
+    if(Demux_Set_Filter(playerHandle, patTable->patServiceInfoArray[channelNumber].pid, 0x02, &filterHandle))
 	{
 		printf("\n%s : ERROR Demux_Set_Filter() fail\n", __FUNCTION__);
         return;
@@ -226,6 +306,7 @@ void startChannel(int32_t channelNumber)
     int16_t audioPid = -1;
     int16_t videoPid = -1;
     uint8_t i = 0;
+    bool txt = false;
     for (i = 0; i < pmtTable->elementaryInfoCount; i++)
     {
         if (((pmtTable->pmtElementaryInfoArray[i].streamType == 0x1) || (pmtTable->pmtElementaryInfoArray[i].streamType == 0x2) || (pmtTable->pmtElementaryInfoArray[i].streamType == 0x1b))
@@ -237,6 +318,10 @@ void startChannel(int32_t channelNumber)
             && (audioPid == -1))
         {
             audioPid = pmtTable->pmtElementaryInfoArray[i].elementaryPid;
+        }
+        if(pmtTable->pmtElementaryInfoArray[i].streamType == 0x6)
+        {
+        	txt = true;
         }
     }
 
@@ -282,9 +367,12 @@ void startChannel(int32_t channelNumber)
     }
     
     /* store current channel info */
-    currentChannel.programNumber = channelNumber + 1;
+    currentChannel.programNumber = channelNumber;
     currentChannel.audioPid = audioPid;
     currentChannel.videoPid = videoPid;
+    currentChannel.txt = txt;
+    
+    infoBannerInit = true;
 }
 
 void* streamControllerTask()
@@ -326,7 +414,7 @@ void* streamControllerTask()
 	}
     
     /* lock to frequency */
-    if(!Tuner_Lock_To_Frequency(DESIRED_FREQUENCY, BANDWIDTH, DVB_T))
+   	if(!Tuner_Lock_To_Frequency(desiredFrequency, bandwidth, DVB_T))
     {
         printf("\n%s: INFO Tuner_Lock_To_Frequency(): %d Hz - success!\n",__FUNCTION__,DESIRED_FREQUENCY);
     }
@@ -457,4 +545,103 @@ int32_t tunerStatusCallback(t_LockStatus status)
         printf("\n%s -----TUNER NOT LOCKED-----\n",__FUNCTION__);
     }
     return 0;
+}
+
+StreamControllerError parseConfigFile()
+{
+	FILE* file;
+	
+	file = fopen("config.txt","r");
+
+	while (!feof(file))
+	{
+		if (fscanf(file,"DESIRED_FREQUENCY:%d\nBANDWIDTH:%d\nMODULE:%s\nAUDIO PID:%d\nVIDEO PID:%d\nAUDIO TYPE:%s\nVIDEO TYPE:%s\nPROGRAM NUMBER:%d ",&desiredFrequency, &bandwidth, module, &audioPid, &videoPid, audioType, videoType, &programNumber))
+		{
+			printf("Config file successfully parsed!\n");
+			break;
+		}
+		else
+		{
+			printf("Check config file!\n");
+			return SC_ERROR;
+		}
+	}
+
+	fclose(file);
+
+	//printf("%d\n%d\n%s\n%d\n%d\n%s\n%s\n%d\n",desiredFrequency, bandwidth, module, audioPid, videoPid, audioType, videoType, programNumber);	
+
+	return SC_NO_ERROR;
+}
+
+StreamControllerError configFileIsValid()
+{
+	if(desiredFrequency != (uint32_t) 754000000)
+	{
+		printf("Check frequency\n");
+		return SC_ERROR;
+	}
+	if(bandwidth != (uint8_t) 8)
+	{
+		printf("Check bandwidth\n");
+		return SC_ERROR;
+	}
+	if(strcmp("DVB_T", module) != 0)
+	{	
+		printf("Check module\n");
+		return SC_ERROR;
+	}
+	if(strcmp("VIDEO_TYPE_MPEG2", audioType) != 0)
+	{
+		printf("Check audio type\n");
+		return SC_ERROR;
+	}
+	if(strcmp("AUDIO_TYPE_MPEG_AUDIO", videoType) != 0)
+	{
+		printf("Check video type\n");
+		return SC_ERROR;
+	}	
+	
+	if(programNumber<=0 || programNumber >7)
+	{
+		printf("Program number not in range! [1 - 7]\n");
+		return SC_ERROR;
+	}
+	if(programNumber == 1 && audioPid != 103 && videoPid != 101)
+	{
+		printf("Audio or video pid don't match with program number\n");
+		return SC_ERROR;
+	}
+	if(programNumber == 2 && audioPid != 203 && videoPid != 201)
+	{
+		printf("Audio or video pid don't match with program number\n");
+		return SC_ERROR;
+	}
+	if(programNumber == 3 && audioPid != 1003 && videoPid != 1001)
+	{
+		printf("Audio or video pid don't match with program number\n");
+		return SC_ERROR;
+	}
+	if(programNumber == 4 && audioPid != 1503 && videoPid != 1501)
+	{
+		printf("Audio or video pid don't match with program number\n");
+		return SC_ERROR;
+	}
+	if(programNumber == 5 && audioPid != 2001 && videoPid != -1)
+	{
+		printf("Audio or video pid don't match with program number\n");
+		return SC_ERROR;
+	}
+	if(programNumber == 6 && audioPid != 2011 && videoPid != -1)
+	{
+		printf("Audio or video pid don't match with program number\n");
+		return SC_ERROR;
+	}
+	if(programNumber == 7 && audioPid != 2021 && videoPid != -1)
+	{
+		printf("Audio or video pid don't match with program number\n");
+		return SC_ERROR;
+	}
+		
+	return SC_NO_ERROR;
 }

@@ -13,6 +13,7 @@
 
 #define DESIRED_FREQUENCY 754000000	        /* Tune frequency in Hz */
 #define BANDWIDTH 8    				        /* Bandwidth in Mhz */
+#define CORECTION_FACTOR 160400000
 
 /* po defaultu utisano (za sada) */
 static uint8_t volumeState = 0;
@@ -36,6 +37,7 @@ typedef struct _ChannelInfo
     int16_t programNumber;
     int16_t audioPid;
     int16_t videoPid;
+    bool txt;
 }ChannelInfo;
 
 /**
@@ -67,11 +69,54 @@ StreamControllerError channelUp();
 StreamControllerError channelDown();
 
 /**
+ * @brief Channel to specific channel number
+ *
+ * @return stream controller error
+ */
+StreamControllerError changeChannelTo(int16_t channelNumber);
+
+/**
+ * @brief Volume up
+ *
+ * @return stream controller error
+ */
+StreamControllerError changeVolumeUp();
+
+/**
+ * @brief Volume down
+ *
+ * @return stream controller error
+ */
+StreamControllerError changeVolumeDown();
+
+/**
+ * @brief Volume to mute
+ *
+ * @return stream controller error
+ */
+StreamControllerError changeVolumeToMute();
+
+/**
+ * @brief Parse config file
+ *
+ * @return stream controller error
+ */
+StreamControllerError parseConfigFile();
+
+/**
+ * @brief Checks if config file is valid
+ *
+ * @return stream controller error
+ */
+StreamControllerError configFileIsValid();
+
+/**
  * @brief Returns current channel info
  *
  * @param [out] channelInfo - channel info structure with current channel info
  * @return stream controller error code
  */
+StreamControllerError getChannelInfo(ChannelInfo* channelInfo);
  
 StreamControllerError volumeUp();
  
