@@ -11,6 +11,8 @@ static int32_t graphicInit = 0;
 static bool volumeInit = false;
 static bool infoBannerInit = false; 
 
+static bool show = false;
+
 /*
 
 ****************************************************************************************************************************************************************************************
@@ -33,7 +35,14 @@ void* renderLoop()
 		if(volumeInit)
 		{
 			pthread_mutex_lock(&mutex);
-			drawVolumeState(volumeState);
+			if(muteFlag)
+			{
+				drawVolumeState(0);
+			}
+			else
+			{
+				drawVolumeState(volumeState);
+			}
 			pthread_mutex_unlock(&mutex);
 			printf("usao u volumeInit\n");
 		}
@@ -43,6 +52,12 @@ void* renderLoop()
 			showInfoBanner();
 			pthread_mutex_unlock(&mutex);
 			printf("usao u infoBannerInit\n");
+		}
+		
+		if(show)
+		{
+			DFBCHECK(primary->Flip(primary, NULL, 0));
+			show = false;
 		}
 	}
 }
@@ -151,7 +166,8 @@ void deInit()
 
 */
 
-void wipeScreen(union sigval signalArg){
+void wipeScreen(union sigval signalArg)
+{
     int32_t ret;
 	
 	/* clear screen */
@@ -281,6 +297,8 @@ void drawVolumeState(uint8_t volumeState)
     static int screenHeight = 0;
     DFBSurfaceDescription surfaceDesc;
     
+    show = true;
+    
     uint16_t j;
     
     /* initialize DirectFB */
@@ -365,7 +383,7 @@ void drawVolumeState(uint8_t volumeState)
                            /*destination x coordinate of the upper left corner of the image*/screenWidth - logoWidth - 50,
                            /*destination y coordinate of the upper left corner of the image*/20));
    
-   	DFBCHECK(primary->Flip(primary, NULL, 0));
+   	//DFBCHECK(primary->Flip(primary, NULL, 0));
     
 	printf("drawVolumeState 3\n");
     /* set the timer for clearing the screen */
@@ -404,6 +422,8 @@ void showInfoBanner()
     static int screenHeight = 0;
     DFBSurfaceDescription surfaceDesc;
     
+    show = true;
+    
     uint16_t j;
     
     /* initialize DirectFB */
@@ -433,35 +453,35 @@ void showInfoBanner()
 	
 	
 	/* fade in efekat */
-	for(j = 0x00; j < 0xff; j++)
-	{
-		DFBCHECK(primary->SetColor(primary, 0x33, 0x33, 0x33, j));
-		DFBCHECK(primary->FillRectangle(primary, screenWidth/4, screenHeight - 160, screenWidth/2, 250));
+	//for(j = 0x00; j < 0xff; j++)
+	//{
+	DFBCHECK(primary->SetColor(primary, 0x33, 0x33, 0x33, 0xff));
+	DFBCHECK(primary->FillRectangle(primary, screenWidth/4, screenHeight - 160, screenWidth/2, 250));
 
-		DFBCHECK(primary->SetColor(primary, 0xff, 0x80, 0x40, j));
-	
-	
-		/* draw the string */
-		sprintf(keycodeString,"%d", currentChannel.programNumber);
-		DFBCHECK(primary->DrawString(primary,"PROGRAM NUMBER: ", -1, screenWidth/4 + 20,  screenHeight - 130, DSTF_LEFT));
-		DFBCHECK(primary->DrawString(primary, keycodeString, -1, screenWidth/4 + 400,  screenHeight - 130, DSTF_LEFT));
-	
-		sprintf(keycodeString,"%d", currentChannel.videoPid);
-		DFBCHECK(primary->DrawString(primary,"VIDEO PID: ", -1, screenWidth/4 + 20,  screenHeight - 90, DSTF_LEFT));
-		DFBCHECK(primary->DrawString(primary, keycodeString, -1, screenWidth/4 + 400,  screenHeight - 90, DSTF_LEFT));
-	
-		sprintf(keycodeString,"%d", currentChannel.audioPid);
-		DFBCHECK(primary->DrawString(primary,"AUDIO PID: ", -1, screenWidth/4 + 20,  screenHeight - 50, DSTF_LEFT));
-		DFBCHECK(primary->DrawString(primary, keycodeString, -1, screenWidth/4 + 400,  screenHeight - 50, DSTF_LEFT));
-	
-		/* DODATI INFO O TRENUTNOJ EMISIJI */
-		DFBCHECK(primary->DrawString(primary,"TRENUTNA EMISIJA (treba uraditi...): ", -1, screenWidth/4 + 20,  screenHeight - 10, DSTF_LEFT));
+	DFBCHECK(primary->SetColor(primary, 0xff, 0x80, 0x40, 0xff));
+
+
+	/* draw the string */
+	sprintf(keycodeString,"%d", currentChannel.programNumber);
+	DFBCHECK(primary->DrawString(primary,"PROGRAM NUMBER: ", -1, screenWidth/4 + 20,  screenHeight - 130, DSTF_LEFT));
+	DFBCHECK(primary->DrawString(primary, keycodeString, -1, screenWidth/4 + 400,  screenHeight - 130, DSTF_LEFT));
+
+	sprintf(keycodeString,"%d", currentChannel.videoPid);
+	DFBCHECK(primary->DrawString(primary,"VIDEO PID: ", -1, screenWidth/4 + 20,  screenHeight - 90, DSTF_LEFT));
+	DFBCHECK(primary->DrawString(primary, keycodeString, -1, screenWidth/4 + 400,  screenHeight - 90, DSTF_LEFT));
+
+	sprintf(keycodeString,"%d", currentChannel.audioPid);
+	DFBCHECK(primary->DrawString(primary,"AUDIO PID: ", -1, screenWidth/4 + 20,  screenHeight - 50, DSTF_LEFT));
+	DFBCHECK(primary->DrawString(primary, keycodeString, -1, screenWidth/4 + 400,  screenHeight - 50, DSTF_LEFT));
+
+	/* DODATI INFO O TRENUTNOJ EMISIJI */
+	DFBCHECK(primary->DrawString(primary,"TRENUTNA EMISIJA (treba uraditi...): ", -1, screenWidth/4 + 20,  screenHeight - 10, DSTF_LEFT));
 		
 		/* update screen */
-   		DFBCHECK(primary->Flip(primary, NULL, 0));
+   		//DFBCHECK(primary->Flip(primary, NULL, 0));
    		
-   		j += 6;
-	}
+   		//j += 6;
+	//}
 
     /* set the timer for clearing the screen */
     
@@ -480,4 +500,5 @@ void showInfoBanner()
 
 	printf("showInfoBanner\n");
 	infoBannerInit = false; 
+	show = true;
 }

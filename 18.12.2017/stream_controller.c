@@ -162,14 +162,16 @@ StreamControllerError mute()
 {
 	if(muteFlag)
 	{
-		drawVolumeState(volumeState);
+		volumeInit = true;
 		muteFlag = false;
 	}
 	else
 	{
-		drawVolumeState(0);
+		
+		volumeInit = true;
 		muteFlag = true;
 	}
+	
 	
 	return SC_NO_ERROR;
 }
