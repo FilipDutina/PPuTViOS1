@@ -7,6 +7,7 @@
 
 #define TABLES_MAX_NUMBER_OF_PIDS_IN_PAT    20 	    /* Max number of PMT pids in one PAT table */
 #define TABLES_MAX_NUMBER_OF_ELEMENTARY_PID 20       /* Max number of elementary pids in one PMT table */
+#define TABLES_MAX_NUMBER_OF_ELEMENTARY_PID_IN_EIT 20       /* Max number of elementary pids in one EIT table */
 
 /**
  * @brief Enumeration of possible tables parser error codes
@@ -89,13 +90,52 @@ typedef struct _PmtTable
 }PmtTable;
 
 /**
+ * @brief Structure that defines EIT table header
+ */
+typedef struct _EitTableHeader
+{
+	uint8_t tableId;
+	uint16_t sectionLength;
+}EitTableHeader;
+
+/**
+ * @brief Structure that describes EIT elementary info
+ */
+typedef struct _EitDescriptor
+{
+	uint8_t eventNameLength;
+	char eventNameChar[100];
+	uint8_t descriptionLength;
+	char descriptionChar[100];
+}EitDescriptor;
+
+/**
+ * @brief Structure that defines EIT elementary info
+ */
+typedef struct _EitElementaryInfo
+{
+	uint16_t descriptorsLoopLength;
+	EitDescriptor descriptor;
+}EitElementaryInfo;
+
+/**
+ * @brief Structure that defines EIT table
+ */
+typedef struct _EitTable
+{
+	EitTableHeader eitTableHeader;
+	EitElementaryInfo eitElementaryInfoArray[TABLES_MAX_NUMBER_OF_ELEMENTARY_PID_IN_EIT];
+	uint8_t elementaryInfoCount;
+}EitTable;
+
+/**
  * @brief  Parse PAT header.
  * 
  * @param  [in]   patHeaderBuffer Buffer that contains PAT header
  * @param  [out]  patHeader PAT header
  * @return tables error code
  */
-ParseErrorCode parsePatHeader(const uint8_t* patHeaderBuffer, PatHeader* patHeader);
+static ParseErrorCode parsePatHeader(const uint8_t* patHeaderBuffer, PatHeader* patHeader);
 
 /**
  * @brief  Parse PAT Service information.
@@ -104,7 +144,7 @@ ParseErrorCode parsePatHeader(const uint8_t* patHeaderBuffer, PatHeader* patHead
  * @param  [out]  descriptor PAT Service info
  * @return tables error code
  */
-ParseErrorCode parsePatServiceInfo(const uint8_t* patServiceInfoBuffer, PatServiceInfo* patServiceInfo);
+static ParseErrorCode parsePatServiceInfo(const uint8_t* patServiceInfoBuffer, PatServiceInfo* patServiceInfo);
 
 /**
  * @brief  Parse PAT Table.
@@ -113,7 +153,7 @@ ParseErrorCode parsePatServiceInfo(const uint8_t* patServiceInfoBuffer, PatServi
  * @param  [out]  patTable PAT Table
  * @return tables error code
  */
-ParseErrorCode parsePatTable(const uint8_t* patSectionBuffer, PatTable* patTable);
+static ParseErrorCode parsePatTable(const uint8_t* patSectionBuffer, PatTable* patTable);
 
 /**
  * @brief  Print PAT Table
@@ -121,7 +161,7 @@ ParseErrorCode parsePatTable(const uint8_t* patSectionBuffer, PatTable* patTable
  * @param  [in]   patTable PAT table to be printed
  * @return tables error code
  */
-ParseErrorCode printPatTable(PatTable* patTable);
+static ParseErrorCode printPatTable(PatTable* patTable);
 
 /**
  * @brief Parse pmt table
@@ -130,7 +170,7 @@ ParseErrorCode printPatTable(PatTable* patTable);
  * @param [out] pmtHeader PMT table header
  * @return tables error code
  */
-ParseErrorCode parsePmtHeader(const uint8_t* pmtHeaderBuffer, PmtTableHeader* pmtHeader);
+static ParseErrorCode parsePmtHeader(const uint8_t* pmtHeaderBuffer, PmtTableHeader* pmtHeader);
 
 /**
  * @brief Parse PMT elementary info
@@ -139,7 +179,7 @@ ParseErrorCode parsePmtHeader(const uint8_t* pmtHeaderBuffer, PmtTableHeader* pm
  * @param [out] PMT elementary info
  * @return tables error code
  */
-ParseErrorCode parsePmtElementaryInfo(const uint8_t* pmtElementaryInfoBuffer, PmtElementaryInfo* pmtElementaryInfo);
+static ParseErrorCode parsePmtElementaryInfo(const uint8_t* pmtElementaryInfoBuffer, PmtElementaryInfo* pmtElementaryInfo);
 
 /**
  * @brief Parse PMT table
@@ -148,7 +188,7 @@ ParseErrorCode parsePmtElementaryInfo(const uint8_t* pmtElementaryInfoBuffer, Pm
  * @param [out] pmtTable PMT table
  * @return tables error code
  */
-ParseErrorCode parsePmtTable(const uint8_t* pmtSectionBuffer, PmtTable* pmtTable);
+static ParseErrorCode parsePmtTable(const uint8_t* pmtSectionBuffer, PmtTable* pmtTable);
 
 /**
  * @brief Print PMT table
@@ -156,8 +196,41 @@ ParseErrorCode parsePmtTable(const uint8_t* pmtSectionBuffer, PmtTable* pmtTable
  * @param [in] pmtTable PMT table
  * @return tables error code
  */
-ParseErrorCode printPmtTable(PmtTable* pmtTable);
+static ParseErrorCode printPmtTable(PmtTable* pmtTable);
+
+/**
+ * @brief Parse eit table
+ *
+ * @param [in]  eitHeaderBuffer Buffer that contains EIT header
+ * @param [out] eitHeader eit table header
+ * @return tables error code
+ */
+static ParseErrorCode parseEitHeader(const uint8_t* eitHeaderBuffer, EitTableHeader* eitHeader);
+
+/**
+ * @brief Parse EIT elementary info
+ *
+ * @param [in]  eitElementaryInfoBuffer Buffer that contains eit elementary info
+ * @param [out] EIT elementary info
+ * @return tables error code
+ */
+static ParseErrorCode parseEitElementaryInfo(const uint8_t* eitElementaryInfoBuffer, EitElementaryInfo* eitElementaryInfo);
+
+/**
+ * @brief Parse EIT table
+ *
+ * @param [in]  eitSectionBuffer Buffer that contains eit table section
+ * @param [out] eitTable EIT table
+ * @return tables error code
+ */
+static ParseErrorCode parseEitTable(const uint8_t* eitSectionBuffer, EitTable* eitTable);
+
+/**
+ * @brief Print EIT table
+ *
+ * @param [in] eitTable EIT table
+ * @return tables error code
+ */
+static ParseErrorCode printEitTable(EitTable* eitTable);
 
 #endif /* __TABLES_H__ */
-
-
