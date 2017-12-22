@@ -10,10 +10,14 @@
 #include <time.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <string.h>
 
 #define DESIRED_FREQUENCY 754000000	        /* Tune frequency in Hz */
 #define BANDWIDTH 8    				        /* Bandwidth in Mhz */
 #define CORECTION_FACTOR 160400000
+
+#define CHANNEL_SERVICE_ID 489
+
 
 /* po defaultu utisano (za sada) */
 static uint8_t volumeState = 0;

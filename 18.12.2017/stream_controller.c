@@ -54,7 +54,7 @@ StreamControllerError streamControllerInit()
 		return SC_ERROR;
 	}
 	
-	init();
+	graphicInit();
 	
     if (pthread_create(&scThread, NULL, &streamControllerTask, NULL))
     {
@@ -67,7 +67,7 @@ StreamControllerError streamControllerInit()
 
 StreamControllerError streamControllerDeinit()
 {
-	deInit();
+	graphicDeinit();
     if (!isInitialized) 
     {
         printf("\n%s : ERROR streamControllerDeinit() fail, module is not initialized!\n", __FUNCTION__);
@@ -573,13 +573,24 @@ int32_t sectionReceivedCallback(uint8_t *buffer)
     }
     else if (tableId == 0x4e)
     {
-    	printf("\n%s -----EIT TABLE ARRIVED-----\n",__FUNCTION__);
+		memset(eitTable, 0x0, sizeof(EitTable));
     	if(parseEitTable(buffer, eitTable)==TABLES_PARSE_OK)
         {
-            printEitTable(eitTable);
-            pthread_mutex_lock(&demuxMutex);
-		    pthread_cond_signal(&demuxCond);
-		    pthread_mutex_unlock(&demuxMutex);
+        	if(eitTable->eitTableHeader.serviceId == pmtTable->pmtHeader.programNumber && eitTable->eitElementaryInfoArray[0].runningStatus == 0x4/*(programNumber + CHANNEL_SERVICE_ID)*/)	/* + 490 */
+        	{
+        		/*sta mi treba da bih ispisao ime i opis emisije????*/
+				strcpy(ime, eitTable->eitElementaryInfoArray[0].descriptor.eventNameChar);
+				strcpy(opis, eitTable->eitElementaryInfoArray[0].descriptor.descriptionChar);
+				
+				printf("ovo1111 gledaj: %s\n", eitTable->eitElementaryInfoArray[0].descriptor.eventNameChar);
+				printf("ovo2222 gledaj: %s\n", eitTable->eitElementaryInfoArray[0].descriptor.descriptionChar);
+        	
+        		printf("\n%s -----EIT TABLE ARRIVED-----\n",__FUNCTION__);
+		        printEitTable(eitTable);
+		        pthread_mutex_lock(&demuxMutex);
+				pthread_cond_signal(&demuxCond);
+				pthread_mutex_unlock(&demuxMutex);
+		    }
         }
     
     }

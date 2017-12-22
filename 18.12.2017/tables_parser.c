@@ -307,6 +307,7 @@ ParseErrorCode printPmtTable(PmtTable* pmtTable)
 /*
 
 ****************************************************************************************************************************************************************************************
+EIT TABLE
 ****************************************************************************************************************************************************************************************
 
 */
@@ -334,7 +335,13 @@ ParseErrorCode parseEitHeader(const uint8_t* eitHeaderBuffer, EitTableHeader* ei
     higher8Bits = (uint8_t) (*(eitHeaderBuffer + 1));	//uzmem 1 + 1 + 2 + 4
     lower8Bits = (uint8_t) (*(eitHeaderBuffer + 2));	//ovde uzmem ostalih 8 bita
     all16Bits = (uint16_t) ((higher8Bits << 8) + lower8Bits);	//spojim u sesnaestobitnu vrednost
-    eitHeader -> sectionLength = all16Bits & 0x0FFF;	//uzimam 12 bita; tolika mi je velicina sectionLength-a
+    eitHeader->sectionLength = all16Bits & 0x0FFF;	//uzimam 12 bita; tolika mi je velicina sectionLength-a
+    
+    higher8Bits = (uint8_t) (*(eitHeaderBuffer + 3));
+    lower8Bits = (uint8_t) (*(eitHeaderBuffer + 4));
+    all16Bits = (uint16_t) ((higher8Bits << 8) + lower8Bits);
+    eitHeader->serviceId = all16Bits & 0xFFFF;
+    
 
 	return TABLES_PARSE_OK;
 }
@@ -353,6 +360,7 @@ ParseErrorCode parseEitElementaryInfo(const uint8_t* eitElementaryInfoBuffer, Ei
 
 	uint16_t i;
 	uint16_t j;
+	uint16_t k;
 	
 	//**************************************************************************************************************************************
 	
@@ -360,35 +368,74 @@ ParseErrorCode parseEitElementaryInfo(const uint8_t* eitElementaryInfoBuffer, Ei
 
 /*typedef struct _EitDescriptor
 {
+	uint8_t descriptorTag;
+	uint8_t descriptorLength;
 	uint8_t eventNameLength;
-	char eventNameChar[20];
+	char eventNameChar[100];
 	uint8_t descriptionLength;
-	char descriptionChar[20];
+	char descriptionChar[1000];
 }EitDescriptor;*/
 
+/*typedef struct _EitElementaryInfo
+{
+	uint8_t runningStatus;
+	uint16_t descriptorsLoopLength;
+	EitDescriptor descriptor;
+}EitElementaryInfo;*/
+
 	//**************************************************************************************************************************************
+
+	/*lower8Bits = (uint8_t) (*(patHeaderBuffer + 5));
+    lower8Bits = lower8Bits >> 1;
+    patHeader->versionNumber = lower8Bits & 0x1F;*/
+    lower8Bits = (uint8_t) (*(eitElementaryInfoBuffer + 10));
+    lower8Bits = lower8Bits >> 5;
+    eitElementaryInfo->runningStatus = lower8Bits & 0x7;
+
 
 	higher8Bits = (uint8_t) (*(eitElementaryInfoBuffer + 10));	
     lower8Bits = (uint8_t) (*(eitElementaryInfoBuffer + 11));	
     all16Bits = (uint16_t) ((higher8Bits << 8) + lower8Bits);
     eitElementaryInfo->descriptorsLoopLength = all16Bits & 0x0FFF;
+ 
     
-    eitElementaryInfo->descriptor.eventNameLength = *(eitElementaryInfoBuffer + 12 + 5);
+    k = 0;
     
-    for(i = 0; i < eitElementaryInfo->descriptor.eventNameLength; i++)
+    if(eitElementaryInfo->runningStatus == 0x4)
     {
-    	eitElementaryInfo->descriptor.eventNameChar[i] = (char)(*(eitElementaryInfoBuffer + 12 + 6 + i));
-    }
-    eitElementaryInfo->descriptor.eventNameChar[eitElementaryInfo->descriptor.eventNameLength] = '\0';
-    
-    eitElementaryInfo->descriptor.descriptionLength = *(eitElementaryInfoBuffer + 12 + 6 + eitElementaryInfo->descriptor.eventNameLength);
-    
-    for(j = 0; j < eitElementaryInfo->descriptor.descriptionLength; j++)
-    {
-    	eitElementaryInfo->descriptor.descriptionChar[j] = (char)(*(eitElementaryInfoBuffer + 12 + 6 + eitElementaryInfo->descriptor.eventNameLength + 1 + j));
-    }
-	eitElementaryInfo->descriptor.descriptionChar[eitElementaryInfo->descriptor.descriptionLength] = '\0';
-	
+		while(k < eitElementaryInfo->descriptorsLoopLength)
+		{
+			eitElementaryInfo->descriptor.descriptorTag = *(eitElementaryInfoBuffer + 12 + k);
+			eitElementaryInfo->descriptor.descriptorLength = *(eitElementaryInfoBuffer + 12 + 1 + k);
+		
+			if(eitElementaryInfo->descriptor.descriptorTag == 0x4d)
+			{
+				printf("ovaj gledaj : %d\n", eitElementaryInfo->runningStatus);
+				//duzina imena emisije
+				eitElementaryInfo->descriptor.eventNameLength = *(eitElementaryInfoBuffer + 12 + 5 + k);
+				//dobavljanje char-ova koji cine ime emisije
+				for(i = 0; i < eitElementaryInfo->descriptor.eventNameLength; i++)
+				{
+					eitElementaryInfo->descriptor.eventNameChar[i] = (char)(*(eitElementaryInfoBuffer + 12 + 6 + i + k));
+				}
+				//zavrsavanje stringa
+				eitElementaryInfo->descriptor.eventNameChar[eitElementaryInfo->descriptor.eventNameLength] = '\0';
+		
+				//duzina opisa emisije
+				eitElementaryInfo->descriptor.descriptionLength = *(eitElementaryInfoBuffer + 12 + 6 + eitElementaryInfo->descriptor.eventNameLength + k);
+				//dobavljanje char-ova koji cine opis emisije
+				for(j = 0; j < eitElementaryInfo->descriptor.descriptionLength; j++)
+				{
+					eitElementaryInfo->descriptor.descriptionChar[j] = (char)(*(eitElementaryInfoBuffer + 12 + 6 + eitElementaryInfo->descriptor.eventNameLength + 1 + j + k));
+				}
+				//zavrsavanje stringa
+				eitElementaryInfo->descriptor.descriptionChar[eitElementaryInfo->descriptor.descriptionLength] = '\0';
+			}
+		
+		
+			k += eitElementaryInfo->descriptor.descriptorLength + 2;
+		}
+	}
 	return TABLES_PARSE_OK;
 }
 
@@ -444,13 +491,16 @@ ParseErrorCode printEitTable(EitTable* eitTable)
     printf("\n********************EIT TABLE SECTION********************\n");
     printf("table_id                 |      %d\n",eitTable->eitTableHeader.tableId);
     printf("section_length           |      %d\n",eitTable->eitTableHeader.sectionLength);
+    printf("service_id           |      %d\n",eitTable->eitTableHeader.serviceId);
     
-    for (i=0; i<eitTable->elementaryInfoCount;i++)
-    {
+   // for (i=0; i<eitTable->elementaryInfoCount;i++)
+    //{
         printf("-----------------------------------------\n");
         printf("NAME :          |      %s\n",eitTable->eitElementaryInfoArray[i].descriptor.eventNameChar);
+        printf("NAME LENGTH :          |      %d\n",eitTable->eitElementaryInfoArray[i].descriptor.eventNameLength);
         printf("DESCRIPTION :           |      %s\n",eitTable->eitElementaryInfoArray[i].descriptor.descriptionChar);
-    }
+        printf("DESCRIPTION LENGTH :           |      %d\n",eitTable->eitElementaryInfoArray[i].descriptor.descriptionLength);
+    //}
 	
     printf("\n********************EIT TABLE SECTION********************\n");
     

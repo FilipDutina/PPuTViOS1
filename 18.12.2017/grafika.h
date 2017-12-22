@@ -11,6 +11,7 @@
 #include <time.h>
 #include <stdint.h>
 #include <pthread.h>
+#include <string.h>
 
 #include "stream_controller.h"
 
@@ -30,16 +31,10 @@ if (err != DFB_OK)                                          \
   }                                                         \
 }
 
-static ChannelInfo currentChannel;
 
-static timer_t timerId;
-static IDirectFBSurface *primary = NULL;
-static IDirectFB *dfbInterface = NULL;
-static int32_t screenWidth = 0;
-static int32_t screenHeight = 0;
+static void* volumeTimer();
+static void* programInfoTimer();
 
-static struct itimerspec timerSpec;
-static struct itimerspec timerSpecOld;
 
 /**
  * @brief  Inicijalizacija grafike.
@@ -48,7 +43,7 @@ static struct itimerspec timerSpecOld;
  * @param  [out]  
  * @return tables 
  */
-static void init();
+static void graphicInit();
 /**
  * @brief  Deinicijalizacija grafike.
  * 
@@ -56,15 +51,8 @@ static void init();
  * @param  [out]  
  * @return tables 
  */
-static void deInit();
-/**
- * @brief  Brisanje ekrana.
- * 
- * @param  [in]   
- * @param  [out]  
- * @return tables 
- */
-static void wipeScreen(union sigval signalArg);
+static void graphicDeinit();
+
 /**
  * @brief  Crtanje grafike za zvuk.
  * 
@@ -88,7 +76,6 @@ static void drawRadio();
  * @param  [out]  
  * @return tables 
  */
-static void showInfoBanner();
-
+static void showProgramInfoBanner();
 
 #endif /* __GRAFIKA_H__ */

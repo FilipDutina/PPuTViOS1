@@ -96,6 +96,7 @@ typedef struct _EitTableHeader
 {
 	uint8_t tableId;
 	uint16_t sectionLength;
+	uint16_t serviceId;
 }EitTableHeader;
 
 /**
@@ -103,10 +104,12 @@ typedef struct _EitTableHeader
  */
 typedef struct _EitDescriptor
 {
+	uint8_t descriptorTag;
+	uint8_t descriptorLength;
 	uint8_t eventNameLength;
-	char eventNameChar[100];
+	char eventNameChar[1000];
 	uint8_t descriptionLength;
-	char descriptionChar[100];
+	char descriptionChar[1000];
 }EitDescriptor;
 
 /**
@@ -114,6 +117,7 @@ typedef struct _EitDescriptor
  */
 typedef struct _EitElementaryInfo
 {
+	uint8_t runningStatus;
 	uint16_t descriptorsLoopLength;
 	EitDescriptor descriptor;
 }EitElementaryInfo;
