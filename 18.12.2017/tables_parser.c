@@ -405,20 +405,20 @@ ParseErrorCode parseEitElementaryInfo(const uint8_t* eitElementaryInfoBuffer, Ei
 				//dobavljanje char-ova koji cine ime emisije
 				for(i = 0; i < eitElementaryInfo->descriptor.eventNameLength; i++)
 				{
-					eitElementaryInfo->descriptor.eventNameChar[i] = (char)(*(eitElementaryInfoBuffer + 12 + 6 + i + k));
+					eitElementaryInfo->descriptor.eventNameChar[i] = (char)(*(eitElementaryInfoBuffer + 12 + 6 + i + k + 1));
 				}
 				//zavrsavanje stringa
-				eitElementaryInfo->descriptor.eventNameChar[eitElementaryInfo->descriptor.eventNameLength] = '\0';
+				eitElementaryInfo->descriptor.eventNameChar[eitElementaryInfo->descriptor.eventNameLength - 1] = '\0';
 		
 				//duzina opisa emisije
 				eitElementaryInfo->descriptor.descriptionLength = *(eitElementaryInfoBuffer + 12 + 6 + eitElementaryInfo->descriptor.eventNameLength + k);
 				//dobavljanje char-ova koji cine opis emisije
 				for(j = 0; j < eitElementaryInfo->descriptor.descriptionLength; j++)
 				{
-					eitElementaryInfo->descriptor.descriptionChar[j] = (char)(*(eitElementaryInfoBuffer + 12 + 6 + eitElementaryInfo->descriptor.eventNameLength + 1 + j + k));
+					eitElementaryInfo->descriptor.descriptionChar[j] = (char)(*(eitElementaryInfoBuffer + 12 + 6 + eitElementaryInfo->descriptor.eventNameLength + 1 + j + k + 1));
 				}
 				//zavrsavanje stringa
-				eitElementaryInfo->descriptor.descriptionChar[eitElementaryInfo->descriptor.descriptionLength] = '\0';
+				eitElementaryInfo->descriptor.descriptionChar[eitElementaryInfo->descriptor.descriptionLength - 1] = '\0';
 			}
 		
 		

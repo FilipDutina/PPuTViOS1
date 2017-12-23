@@ -44,6 +44,8 @@ typedef struct _ChannelInfo
     bool txt;
 }ChannelInfo;
 
+typedef void(*streamControllerErrorCallback)();
+
 /**
  * @brief Initializes stream controller module
  *
@@ -108,13 +110,6 @@ StreamControllerError changeVolumeToMute();
 StreamControllerError parseConfigFile();
 
 /**
- * @brief Checks if config file is valid
- *
- * @return stream controller error
- */
-StreamControllerError configFileIsValid();
-
-/**
  * @brief Returns current channel info
  *
  * @param [out] channelInfo - channel info structure with current channel info
@@ -149,5 +144,23 @@ StreamControllerError mute();
  * @return stream controller error
  */
 StreamControllerError info();
+
+/**
+ * @brief Checks if config file is valid
+ *
+ * @return stream controller error
+ */
+StreamControllerError configFileIsValid();
+
+/**
+ * @brief Initializes stream controller module
+ *
+ * @return stream controller error code
+ */
+StreamControllerError registerStreamControllerErrorCallback(streamControllerErrorCallback streamControllerErrorCallback);
+
+StreamControllerError unregisterStreamControllerErrorCallback(streamControllerErrorCallback streamControllerErrorCallback);
+
+StreamControllerError checkPids(int32_t channelNumber);
 
 #endif /* __STREAM_CONTROLLER_H__ */

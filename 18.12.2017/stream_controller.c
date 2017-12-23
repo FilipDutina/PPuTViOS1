@@ -37,11 +37,13 @@ static void startChannel(int32_t channelNumber);
 
 static uint32_t desiredFrequency = 0;
 static int8_t bandwidth = 0;
-static int16_t  audioPid = 0;
-static int16_t  videoPid = 0;
+static int16_t audioPidConfig = 0;
+static int16_t videoPidConfig = 0;
 char module[8];
 char audioType[25];
 char videoType[20];
+
+static streamControllerErrorCallback callback = NULL;
 
 
 StreamControllerError streamControllerInit()
@@ -520,13 +522,23 @@ void* streamControllerTask()
         return (void*) SC_ERROR;
 	}
 	pthread_mutex_unlock(&demuxMutex);
+	
+	/* set isInitialized flag */
+    isInitialized = true;
+	
+	if(checkPids(programNumber))
+	{
+		if(callback!=NULL)
+		{
+			callback();
+			printf("****callback****\n");
+		}
+		return (void*) SC_ERROR;
+	}
     
     
     /* start current channel */
     startChannel(programNumber);
-    
-    /* set isInitialized flag */
-    isInitialized = true;
 
     while(!threadExit)
     {
@@ -615,7 +627,7 @@ StreamControllerError parseConfigFile()
 
 	while (!feof(file))
 	{
-		if (fscanf(file,"DESIRED_FREQUENCY:%d\nBANDWIDTH:%d\nMODULE:%s\nAUDIO PID:%d\nVIDEO PID:%d\nAUDIO TYPE:%s\nVIDEO TYPE:%s\nPROGRAM NUMBER:%d ",&desiredFrequency, &bandwidth, module, &audioPid, &videoPid, audioType, videoType, &programNumber))
+		if (fscanf(file,"DESIRED_FREQUENCY:%d\nBANDWIDTH:%d\nMODULE:%s\nAUDIO PID:%d\nVIDEO PID:%d\nAUDIO TYPE:%s\nVIDEO TYPE:%s\nPROGRAM NUMBER:%d ",&desiredFrequency, &bandwidth, module, &audioPidConfig, &videoPidConfig, audioType, videoType, &programNumber))
 		{
 			printf("Config file successfully parsed!\n");
 			break;
@@ -662,46 +674,91 @@ StreamControllerError configFileIsValid()
 		return SC_ERROR;
 	}	
 	
-	if(programNumber<=0 || programNumber >7)
+	if(programNumber <= 0 || programNumber > 7)
 	{
 		printf("Program number not in range! [1 - 7]\n");
 		return SC_ERROR;
 	}
-	if(programNumber == 1 && audioPid != 103 && videoPid != 101)
-	{
-		printf("Audio or video pid don't match with program number\n");
-		return SC_ERROR;
-	}
-	if(programNumber == 2 && audioPid != 203 && videoPid != 201)
-	{
-		printf("Audio or video pid don't match with program number\n");
-		return SC_ERROR;
-	}
-	if(programNumber == 3 && audioPid != 1003 && videoPid != 1001)
-	{
-		printf("Audio or video pid don't match with program number\n");
-		return SC_ERROR;
-	}
-	if(programNumber == 4 && audioPid != 1503 && videoPid != 1501)
-	{
-		printf("Audio or video pid don't match with program number\n");
-		return SC_ERROR;
-	}
-	if(programNumber == 5 && audioPid != 2001 && videoPid != -1)
-	{
-		printf("Audio or video pid don't match with program number\n");
-		return SC_ERROR;
-	}
-	if(programNumber == 6 && audioPid != 2011 && videoPid != -1)
-	{
-		printf("Audio or video pid don't match with program number\n");
-		return SC_ERROR;
-	}
-	if(programNumber == 7 && audioPid != 2021 && videoPid != -1)
-	{
-		printf("Audio or video pid don't match with program number\n");
-		return SC_ERROR;
-	}
-		
+	
 	return SC_NO_ERROR;
+}
+
+StreamControllerError checkPids(int32_t channelNumber)
+{
+/* free PAT table filter */
+    Demux_Free_Filter(playerHandle, filterHandle);
+    
+    /* set demux filter for receive PMT table of program */
+    if(Demux_Set_Filter(playerHandle, patTable->patServiceInfoArray[channelNumber].pid, 0x02, &filterHandle))
+	{
+		printf("\n%s : ERROR Demux_Set_Filter() fail\n", __FUNCTION__);
+        return;
+	}
+    
+    /* wait for a PMT table to be parsed*/
+    pthread_mutex_lock(&demuxMutex);
+	if (ETIMEDOUT == pthread_cond_wait(&demuxCond, &demuxMutex))
+	{
+		printf("\n%s : ERROR Lock timeout exceeded!\n", __FUNCTION__);
+        streamControllerDeinit();
+	}
+	pthread_mutex_unlock(&demuxMutex);
+    
+    /* get audio and video pids */
+    int16_t audioPid = -1;
+    int16_t videoPid = -1;
+    uint8_t i = 0;
+    bool txt = false;
+    for (i = 0; i < pmtTable->elementaryInfoCount; i++)
+    {
+        if (((pmtTable->pmtElementaryInfoArray[i].streamType == 0x1) || (pmtTable->pmtElementaryInfoArray[i].streamType == 0x2) || (pmtTable->pmtElementaryInfoArray[i].streamType == 0x1b))
+            && (videoPid == -1))
+        {
+            videoPid = pmtTable->pmtElementaryInfoArray[i].elementaryPid;
+        } 
+        else if (((pmtTable->pmtElementaryInfoArray[i].streamType == 0x3) || (pmtTable->pmtElementaryInfoArray[i].streamType == 0x4))
+            && (audioPid == -1))
+        {
+            audioPid = pmtTable->pmtElementaryInfoArray[i].elementaryPid;
+        }
+    }
+    
+    if (audioPidConfig!=audioPid || videoPidConfig!=videoPid)
+    {
+    	printf("Audio or video pids don't match with program number\n\n");
+    	return SC_ERROR;
+    }
+    
+    return SC_NO_ERROR;
+}
+
+StreamControllerError registerStreamControllerErrorCallback(streamControllerErrorCallback streamControllerErrorCallback)
+{
+
+    if(callback != NULL)
+    {
+    	printf("registerRemoteControllerCallback failure, callback already registered!\n");
+    	return SC_ERROR;
+    }
+    
+    callback = streamControllerErrorCallback;
+    return SC_NO_ERROR;
+}
+
+StreamControllerError unregisterStreamControllerErrorCallback(streamControllerErrorCallback streamControllerErrorCallback)
+{
+	
+	if(callback == NULL)
+    {
+    	printf("registerRemoteControllerCallback failure, callback already unregistered!\n");
+    	return SC_ERROR;
+    }
+    else if(callback != streamControllerErrorCallback)
+    {
+    	printf("registerRemoteControllerCallback failure, callback already registered!\n");
+    	return SC_ERROR;
+    }
+    
+    callback = NULL;
+    return SC_NO_ERROR;
 }

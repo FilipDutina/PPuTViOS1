@@ -27,6 +27,7 @@ static void remoteControllerCallback(uint16_t code, uint16_t type, uint32_t valu
 static pthread_cond_t deinitCond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t deinitMutex = PTHREAD_MUTEX_INITIALIZER;
 static ChannelInfo channelInfo;
+static void errorCallback();
 
 int main()
 {
@@ -38,6 +39,9 @@ int main()
     
     /* initialize stream controller module */
     ERRORCHECK(streamControllerInit());
+    
+    /* register stream controller error callback */
+	ERRORCHECK(registerStreamControllerErrorCallback(errorCallback));
 
     /* wait for a EXIT remote controller key press event */
     pthread_mutex_lock(&deinitMutex);
@@ -55,6 +59,9 @@ int main()
 
     /* deinitialize stream controller module */
     ERRORCHECK(streamControllerDeinit());
+    
+    /* unregister stream controller error callback */
+	ERRORCHECK(unregisterStreamControllerErrorCallback(errorCallback));
   
     return 0;
 }
@@ -166,4 +173,12 @@ void remoteControllerCallback(uint16_t code, uint16_t type, uint32_t value)
 		default:
 			printf("\nPress P+, P-, V+, V-, mute, info or exit! \n\n");
 	}
+}
+
+void errorCallback()
+{
+	/* Signal condition if pids don't match */
+   	pthread_mutex_lock(&deinitMutex);
+	pthread_cond_signal(&deinitCond);
+    pthread_mutex_unlock(&deinitMutex);
 }

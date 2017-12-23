@@ -23,7 +23,7 @@ RemoteControllerError remoteControllerDeinit()
 {
     /* wait for EXIT key press input event*/
     threadExit = 1;
-    if (pthread_join(remote, NULL))
+    if (pthread_cancel(remote))
     {
         printf("Error during thread join!\n");
         return RC_THREAD_ERROR;
