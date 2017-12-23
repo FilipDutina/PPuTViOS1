@@ -405,12 +405,13 @@ ParseErrorCode parseEitElementaryInfo(const uint8_t* eitElementaryInfoBuffer, Ei
     {
 		while(k < eitElementaryInfo->descriptorsLoopLength)
 		{
+			//printf("descriptorsLoopLength: %d\n", eitElementaryInfo->descriptorsLoopLength);
 			eitElementaryInfo->descriptor.descriptorTag = *(eitElementaryInfoBuffer + 12 + k);
 			eitElementaryInfo->descriptor.descriptorLength = *(eitElementaryInfoBuffer + 12 + 1 + k);
 		
 			if(eitElementaryInfo->descriptor.descriptorTag == 0x4d)
 			{
-				printf("ovaj gledaj : %d\n", eitElementaryInfo->runningStatus);
+				//printf("eitElementaryInfo->runningStatus: %d\n", eitElementaryInfo->runningStatus);
 				//duzina imena emisije
 				eitElementaryInfo->descriptor.eventNameLength = *(eitElementaryInfoBuffer + 12 + 5 + k);
 				//dobavljanje char-ova koji cine ime emisije

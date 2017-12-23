@@ -31,6 +31,7 @@ static void* renderLoop();
 
 static bool volumeInit = false;
 static bool infoBannerInit = false;
+static bool radioInit = false;
 static int32_t graphicInitialized = 0; 
 static int32_t screenWidth = 0;
 static int32_t screenHeight = 0;
@@ -149,11 +150,15 @@ void* renderLoop()
 		
 		pthread_mutex_unlock(&mutex);
 		
-		if(currentChannel.videoPid == -1)
+		if(radioInit)
 		{
 			pthread_mutex_lock(&mutex);
 	
 			drawRadio();
+			
+			DFBCHECK(primary->Flip(primary, NULL, 0));
+			
+			printf("CRTAJ RADIO!\n");
 		
 			pthread_mutex_unlock(&mutex);
 		}	
@@ -178,14 +183,37 @@ void* renderLoop()
 		if(infoBannerInit)
 		{
 			pthread_mutex_lock(&mutex);
+
+			if(!radioInit)
+			{
+				wipeScreen();
+			}
 	
 			showProgramInfoBanner();
 
 			DFBCHECK(primary->Flip(primary, &programInfoBannerFlipRegion, 0));
+			
+			radioInit = false;
 				
 			pthread_mutex_unlock(&mutex);
 		}
 	}
+}
+
+void wipeScreen()
+{
+	DFBCHECK(primary->SetColor(/*surface to draw on*/ primary,
+                               /*red*/ 0x00,
+                               /*green*/ 0x00,
+                               /*blue*/ 0x00,
+                               /*alpha*/ 0x00));	//alpha setovana na nulu
+    DFBCHECK(primary->FillRectangle(/*surface to draw on*/ primary,
+		                        /*upper left x coordinate*/ screenWidth/2,
+		                        /*upper left y coordinate*/ screenHeight/2,
+		                        /*rectangle width*/ screenWidth/4,
+		                        /*rectangle height*/ screenHeight/8));
+		                       
+	DFBCHECK(primary->Flip(primary, NULL, 0));
 }
 
 
@@ -196,7 +224,7 @@ void drawRadio()
                                /*red*/ 0x00,
                                /*green*/ 0x00,
                                /*blue*/ 0x00,
-                               /*alpha*/ 0xff));	//alpha setovana na nulu
+                               /*alpha*/ 0x00));	//alpha setovana na nulu
     DFBCHECK(primary->FillRectangle(/*surface to draw on*/ primary,
 		                        /*upper left x coordinate*/ 0,
 		                        /*upper left y coordinate*/ 0,
@@ -283,13 +311,22 @@ void showProgramInfoBanner()
 		DFBCHECK(primary->DrawString(primary, "NO", -1, screenWidth/4 + 400,  screenHeight - 70, DSTF_LEFT));
 	}
 	
-	sprintf(keycodeString1,"%s", ime);
-	DFBCHECK(primary->DrawString(primary,"IME EMISIJE: ", -1, screenWidth/4 + 20,  screenHeight - 40, DSTF_LEFT));
-	DFBCHECK(primary->DrawString(primary, keycodeString1, -1, screenWidth/4 + 400,  screenHeight - 40, DSTF_LEFT));
+	if((currentChannel.programNumber >= 5) && (currentChannel.programNumber <= 7))
+	{
+		DFBCHECK(primary->DrawString(primary,"IME EMISIJE: ", -1, screenWidth/4 + 20,  screenHeight - 40, DSTF_LEFT));
+		
+		DFBCHECK(primary->DrawString(primary,"OPIS: ", -1, screenWidth/4 + 20,  screenHeight - 10, DSTF_LEFT));
+	}
+	else
+	{
+		sprintf(keycodeString1,"%s", ime);
+		DFBCHECK(primary->DrawString(primary,"IME EMISIJE: ", -1, screenWidth/4 + 20,  screenHeight - 40, DSTF_LEFT));
+		DFBCHECK(primary->DrawString(primary, keycodeString1, -1, screenWidth/4 + 400,  screenHeight - 40, DSTF_LEFT));
 	
-	sprintf(keycodeString1, "%s", opis);
-	DFBCHECK(primary->DrawString(primary,"OPIS: ", -1, screenWidth/4 + 20,  screenHeight - 10, DSTF_LEFT));
-	DFBCHECK(primary->DrawString(primary, keycodeString1, -1, screenWidth/4 + 400,  screenHeight - 10, DSTF_LEFT));
+		sprintf(keycodeString1, "%s", opis);
+		DFBCHECK(primary->DrawString(primary,"OPIS: ", -1, screenWidth/4 + 20,  screenHeight - 10, DSTF_LEFT));
+		DFBCHECK(primary->DrawString(primary, keycodeString1, -1, screenWidth/4 + 400,  screenHeight - 10, DSTF_LEFT));
+	}
 	
 		
     /* set the timer for clearing the screen */
@@ -305,8 +342,7 @@ void showProgramInfoBanner()
         printf("Error setting timer in %s!\n", __FUNCTION__);
     }
 	
-	infoBannerInit = false; 
-
+	infoBannerInit = false;
 }
 
 static void* programInfoTimer()

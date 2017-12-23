@@ -78,4 +78,6 @@ static void drawRadio();
  */
 static void showProgramInfoBanner();
 
+static void wipeScreen();
+
 #endif /* __GRAFIKA_H__ */

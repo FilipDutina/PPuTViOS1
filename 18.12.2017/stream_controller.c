@@ -114,9 +114,9 @@ StreamControllerError streamControllerDeinit()
 
 StreamControllerError channelUp()
 {   
-    if (programNumber >= patTable->serviceInfoCount - 2)
+    if (programNumber >= patTable->serviceInfoCount - 1)
     {
-        programNumber = 0;
+        programNumber = 1;
     } 
     else
     {
@@ -133,9 +133,9 @@ StreamControllerError channelUp()
 
 StreamControllerError channelDown()
 {
-    if (programNumber <= 0)
+    if (programNumber <= 1)
     {
-        programNumber = patTable->serviceInfoCount - 2;
+        programNumber = patTable->serviceInfoCount - 1;
     } 
     else
     {
@@ -152,7 +152,7 @@ StreamControllerError channelDown()
 
 StreamControllerError changeChannelTo(int16_t channelNumber)
 {
-    programNumber = channelNumber - 1;
+    programNumber = channelNumber;
  
     /* set flag to start current channel */
     changeChannel = true;
@@ -287,6 +287,8 @@ StreamControllerError getChannelInfo(ChannelInfo* channelInfo)
  */
 void startChannel(int32_t channelNumber)
 {
+	printf("pocetak startChannel-a\n");
+
     /* free PAT table filter */
     Demux_Free_Filter(playerHandle, filterHandle);
     
@@ -305,27 +307,32 @@ void startChannel(int32_t channelNumber)
         streamControllerDeinit();
 	}
 	pthread_mutex_unlock(&demuxMutex);
+	printf("pmt\n");
 	
-	
-	 /* free EIT table filter */
-	Demux_Free_Filter(playerHandle, filterHandle);
-    
-    /* set demux filter for receive EIT table of program */
-    if(Demux_Set_Filter(playerHandle, 0x12, 0x4e, &filterHandle))
+	printf("channelNumber: %d\n", channelNumber);
+	if(channelNumber < 5)
 	{
-		printf("\n%s : ERROR Demux_Set_Filter() fail\n", __FUNCTION__);
-        return;
+		printf("eit1\n");
+		 /* free EIT table filter */
+		Demux_Free_Filter(playerHandle, filterHandle);
+		
+		/* set demux filter for receive EIT table of program */
+		if(Demux_Set_Filter(playerHandle, 0x12, 0x4e, &filterHandle))
+		{
+			printf("\n%s : ERROR Demux_Set_Filter() fail\n", __FUNCTION__);
+		    return;
+		}
+		printf("eit2\n");
+		/* wait for a EIT table to be parsed*/
+		pthread_mutex_lock(&demuxMutex);
+		if (ETIMEDOUT == pthread_cond_wait(&demuxCond, &demuxMutex))
+		{
+			printf("\n%s : ERROR Lock timeout exceeded!\n", __FUNCTION__);
+		    streamControllerDeinit();
+		}
+		pthread_mutex_unlock(&demuxMutex);
+		printf("eit3\n");
 	}
-    
-    /* wait for a EIT table to be parsed*/
-    pthread_mutex_lock(&demuxMutex);
-	if (ETIMEDOUT == pthread_cond_wait(&demuxCond, &demuxMutex))
-	{
-		printf("\n%s : ERROR Lock timeout exceeded!\n", __FUNCTION__);
-        streamControllerDeinit();
-	}
-	pthread_mutex_unlock(&demuxMutex);
-	
     
     /* get audio and video pids */
     int16_t audioPid = -1;
@@ -372,6 +379,8 @@ void startChannel(int32_t channelNumber)
     	Player_Stream_Remove(playerHandle, sourceHandle, streamHandleV);
         streamHandleV = 0;
         MV_PE_ClearScreen(playerHandle, 1);
+        radioInit = true;
+        printf("inicijalizacija radija\n");
     }
 
     if (audioPid != -1)
@@ -398,6 +407,7 @@ void startChannel(int32_t channelNumber)
     currentChannel.txt = txt;
     
     infoBannerInit = true;
+    printf("usao u start channel\n");
 }
 
 void* streamControllerTask()
