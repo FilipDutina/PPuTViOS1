@@ -126,7 +126,6 @@ StreamControllerError channelUp()
     /* set flag to start current channel */
     changeChannel = true;
     
-    //infoBannerInit = true;
 
     return SC_NO_ERROR;
 }
@@ -145,7 +144,6 @@ StreamControllerError channelDown()
     /* set flag to start current channel */
     changeChannel = true;
     
-    //infoBannerInit = true;
 
     return SC_NO_ERROR;
 }
@@ -202,8 +200,6 @@ StreamControllerError volumeUp()
 	
 	//poziv funkcije za crtanje 
 	/*funkciji za crtanje kao parametar saljes volumeState i na osnovu toga ce znati koju sliku da iscrta*/
-	//printf("stream controller volumeUp\n");
-	//drawVolumeState(volumeState);
 	volumeInit = true;
 		
 	return SC_NO_ERROR;
@@ -219,8 +215,6 @@ StreamControllerError volumeDown()
 	
 	//pozviv funkcije za crtanje
 	/*funkciji za crtanje kao parametar saljes volumeState i na osnovu toga ce znati koju sliku da iscrta*/
-	//printf("stream controller volumeDown\n");
-	//drawVolumeState(volumeState);
 	volumeInit = true;
 	
 	return SC_NO_ERROR;
@@ -262,7 +256,6 @@ StreamControllerError mute()
 
 StreamControllerError info()
 {
-	//showInfoBanner();
 	infoBannerInit = true;
 }
 
@@ -287,8 +280,6 @@ StreamControllerError getChannelInfo(ChannelInfo* channelInfo)
  */
 void startChannel(int32_t channelNumber)
 {
-	printf("pocetak startChannel-a\n");
-
     /* free PAT table filter */
     Demux_Free_Filter(playerHandle, filterHandle);
     
@@ -312,7 +303,6 @@ void startChannel(int32_t channelNumber)
 	printf("channelNumber: %d\n", channelNumber);
 	if(channelNumber < 5)
 	{
-		printf("eit1\n");
 		 /* free EIT table filter */
 		Demux_Free_Filter(playerHandle, filterHandle);
 		
@@ -322,7 +312,6 @@ void startChannel(int32_t channelNumber)
 			printf("\n%s : ERROR Demux_Set_Filter() fail\n", __FUNCTION__);
 		    return;
 		}
-		printf("eit2\n");
 		/* wait for a EIT table to be parsed*/
 		pthread_mutex_lock(&demuxMutex);
 		if (ETIMEDOUT == pthread_cond_wait(&demuxCond, &demuxMutex))
@@ -331,7 +320,6 @@ void startChannel(int32_t channelNumber)
 		    streamControllerDeinit();
 		}
 		pthread_mutex_unlock(&demuxMutex);
-		printf("eit3\n");
 	}
     
     /* get audio and video pids */
@@ -380,7 +368,6 @@ void startChannel(int32_t channelNumber)
         streamHandleV = 0;
         MV_PE_ClearScreen(playerHandle, 1);
         radioInit = true;
-        printf("inicijalizacija radija\n");
     }
 
     if (audioPid != -1)
@@ -535,8 +522,6 @@ void* streamControllerTask()
 	pthread_mutex_unlock(&demuxMutex);
     
     
-    
-    
     /* start current channel */
     startChannel(programNumber);
     
@@ -586,9 +571,8 @@ int32_t sectionReceivedCallback(uint8_t *buffer)
 		memset(eitTable, 0x0, sizeof(EitTable));
     	if(parseEitTable(buffer, eitTable)==TABLES_PARSE_OK)
         {
-        	if(eitTable->eitTableHeader.serviceId == pmtTable->pmtHeader.programNumber && eitTable->eitElementaryInfoArray[0].runningStatus == 0x4/*(programNumber + CHANNEL_SERVICE_ID)*/)	/* + 490 */
+        	if(eitTable->eitTableHeader.serviceId == pmtTable->pmtHeader.programNumber && eitTable->eitElementaryInfoArray[0].runningStatus == 0x4)
         	{
-        		/*sta mi treba da bih ispisao ime i opis emisije????*/
 				strcpy(ime, eitTable->eitElementaryInfoArray[0].descriptor.eventNameChar);
 				strcpy(opis, eitTable->eitElementaryInfoArray[0].descriptor.descriptionChar);
 				

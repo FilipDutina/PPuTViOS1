@@ -19,7 +19,7 @@
 #define CHANNEL_SERVICE_ID 489
 
 
-/* po defaultu utisano (za sada) */
+/* po defaultu utisano */
 static uint8_t volumeState = 0;
 static bool muteFlag = false;
 
@@ -121,15 +121,33 @@ StreamControllerError configFileIsValid();
  * @return stream controller error code
  */
 StreamControllerError getChannelInfo(ChannelInfo* channelInfo);
- 
+
+/**
+ * @brief Volume up (graphics)
+ *
+ * @return stream controller error
+ */
 StreamControllerError volumeUp();
  
+/**
+ * @brief Volume down (graphics)
+ *
+ * @return stream controller error
+ */
 StreamControllerError volumeDown();
- 
+
+/**
+ * @brief Volume mute (graphics)
+ *
+ * @return stream controller error
+ */
 StreamControllerError mute();
 
+/**
+ * @brief Show info banner (graphics)
+ *
+ * @return stream controller error
+ */
 StreamControllerError info();
-
-StreamControllerError getChannelInfo(ChannelInfo* channelInfo);
 
 #endif /* __STREAM_CONTROLLER_H__ */

@@ -17,7 +17,6 @@
 
 #define FRAME_THICKNESS 10
 #define FONT_HEIGHT 50
-//#define EXIT_BUTTON_KEYCODE 102
 
 /* helper macro for error checking */
 #define DFBCHECK(x...)                                      \
@@ -31,10 +30,9 @@ if (err != DFB_OK)                                          \
   }                                                         \
 }
 
-
+/*tajmeri za grafiku*/
 static void* volumeTimer();
 static void* programInfoTimer();
-
 
 /**
  * @brief  Inicijalizacija grafike.
@@ -44,6 +42,7 @@ static void* programInfoTimer();
  * @return tables 
  */
 static void graphicInit();
+
 /**
  * @brief  Deinicijalizacija grafike.
  * 
@@ -61,6 +60,7 @@ static void graphicDeinit();
  * @return tables 
  */
 static void drawVolumeState(uint8_t volumeState);
+
 /**
  * @brief  Crtanje grafike za radio.
  * 
@@ -69,6 +69,7 @@ static void drawVolumeState(uint8_t volumeState);
  * @return tables 
  */
 static void drawRadio();
+
 /**
  * @brief  Prikazivanje informacija za dati kanal.
  * 
@@ -78,6 +79,13 @@ static void drawRadio();
  */
 static void showProgramInfoBanner();
 
+/**
+ * @brief  WipeScreen funkcija za radio.
+ * 
+ * @param  [in]   
+ * @param  [out]  
+ * @return tables 
+ */
 static void wipeScreen();
 
 #endif /* __GRAFIKA_H__ */

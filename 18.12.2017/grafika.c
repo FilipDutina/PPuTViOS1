@@ -37,7 +37,6 @@ static int32_t screenWidth = 0;
 static int32_t screenHeight = 0;
 static int32_t program_count = 7;
 
-//static SdtDescriptor* descriptor;
 
 static ChannelInfo currentChannel;
 
