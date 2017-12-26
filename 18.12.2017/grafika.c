@@ -1,3 +1,25 @@
+/****************************************************************************
+*
+* Univerzitet u Novom Sadu, Fakultet tehnickih nauka
+* Katedra za Računarsku Tehniku i Računarske Komunikacije
+*
+* -----------------------------------------------------
+* Ispitni zadatak iz predmeta:
+*
+* PROGRAMSKA PODRSKA U TELEVIZIJI I OBRADI SLIKE
+* -----------------------------------------------------
+* Aplikacija za TV prijemnik
+* -----------------------------------------------------
+*
+* \file grafika.c
+* \brief
+* Modul u kome se nalaze funkcije za iscrtavanje grafickih elemenata na ekran.
+* Decembar 2017
+*
+* @Author Filip Dutina
+* \notes
+*****************************************************************************/
+
 #include "grafika.h"
 #include "stream_controller.h"
 
@@ -18,6 +40,7 @@ static IDirectFBSurface *primary = NULL;
 static IDirectFB *dfbInterface = NULL;
 static IDirectFBFont *fontInterface = NULL;
 static DFBFontDescription fontDesc;
+static ChannelInfo currentChannel;
 static IDirectFBImageProvider *provider;
 static IDirectFBSurface *logo_surface[11];
 static DFBSurfaceDescription surfaceDesc;
@@ -37,7 +60,6 @@ static int32_t screenWidth = 0;
 static int32_t screenHeight = 0;
 static int32_t program_count = 7;
 
-static ChannelInfo currentChannel;	//POPRAVI OVO!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 char ime[100];
 char opis[100];
@@ -153,7 +175,6 @@ void* renderLoop()
 			pthread_mutex_lock(&mutex);
 	
 			drawRadio();
-			
 			DFBCHECK(primary->Flip(primary, NULL, 0));
 			
 			printf("CRTAJ RADIO!\n");
@@ -175,6 +196,8 @@ void* renderLoop()
 			}
 			DFBCHECK(primary->Flip(primary, &audioBannerFlipRegion, 0));
 
+			printf("CRTAJ VOLUME!\n");
+
 			pthread_mutex_unlock(&mutex);
 		}
 		
@@ -188,12 +211,13 @@ void* renderLoop()
 			}
 	
 			showProgramInfoBanner();
-
 			DFBCHECK(primary->Flip(primary, &programInfoBannerFlipRegion, 0));
-			
-			radioInit = false;
 				
-			pthread_mutex_unlock(&mutex);
+			printf("CRTAJ INFO BANNER!\n");
+				
+			pthread_mutex_unlock(&mutex); 
+			
+			radioInit = false;                           
 		}
 	}
 }
@@ -206,10 +230,10 @@ void wipeScreen()
                                /*blue*/ 0x00,
                                /*alpha*/ 0x00));	//alpha setovana na nulu
     DFBCHECK(primary->FillRectangle(/*surface to draw on*/ primary,
-		                        /*upper left x coordinate*/ screenWidth/2,
-		                        /*upper left y coordinate*/ screenHeight/2,
-		                        /*rectangle width*/ screenWidth/4,
-		                        /*rectangle height*/ screenHeight/8));
+		                        /*upper left x coordinate*/ 0,
+		                        /*upper left y coordinate*/ 0,
+		                        /*rectangle width*/ 200,
+		                        /*rectangle height*/ 200));
 		                       
 	DFBCHECK(primary->Flip(primary, NULL, 0));
 }
@@ -242,7 +266,8 @@ void drawRadio()
                                  /*number of bytes in the string, -1 for NULL terminated strings*/ -1,
                                  /*x coordinate of the lower left corner of the resulting text*/ 100,
                                  /*y coordinate of the lower left corner of the resulting text*/ 100,
-                                 /*in case of multiple lines, allign text to left*/ DSTF_LEFT));                           
+                                 /*in case of multiple lines, allign text to left*/ DSTF_LEFT));      
+                    
 
 }
 
@@ -339,8 +364,8 @@ void showProgramInfoBanner()
     if(ret == -1){
         printf("Error setting timer in %s!\n", __FUNCTION__);
     }
-	
-	infoBannerInit = false;
+    
+    infoBannerInit = false;
 }
 
 static void* programInfoTimer()

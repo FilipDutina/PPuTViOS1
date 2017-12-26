@@ -1,3 +1,26 @@
+/****************************************************************************
+*
+* Univerzitet u Novom Sadu, Fakultet tehnickih nauka
+* Katedra za Računarsku Tehniku i Računarske Komunikacije
+*
+* -----------------------------------------------------
+* Ispitni zadatak iz predmeta:
+*
+* PROGRAMSKA PODRSKA U TELEVIZIJI I OBRADI SLIKE
+* -----------------------------------------------------
+* Aplikacija za TV prijemnik
+* -----------------------------------------------------
+*
+* \file remote_controller.c
+* \brief
+* U ovom modulu se nalaze funkcije za inicijalizaciju daljinskog upravljaca, upravljanje callback-om
+* i ocitavanje pritisnutih vrednosti.
+* Decembar 2017
+*
+* @Author Filip Dutina
+* \notes
+*****************************************************************************/
+
 #include "remote_controller.h"
 
 static int32_t inputFileDesc;

@@ -1,3 +1,27 @@
+/****************************************************************************
+*
+* Univerzitet u Novom Sadu, Fakultet tehnickih nauka
+* Katedra za Računarsku Tehniku i Računarske Komunikacije
+*
+* -----------------------------------------------------
+* Ispitni zadatak iz predmeta:
+*
+* PROGRAMSKA PODRSKA U TELEVIZIJI I OBRADI SLIKE
+* -----------------------------------------------------
+* Aplikacija za TV prijemnik
+* -----------------------------------------------------
+*
+* \file stream_controller.h
+* \brief
+* Modul u kome nalaze funkcije za inicijalizaciju toka, pojacavanja i utisavanje jacine zvuka, prebacivanje kanala, 
+* pokretanje kanala, upravljanje tokom i upravljanje callback-om u zavisnosti da li je config.txt fajl dobro
+* parsiran ili ne.
+* Decembar 2017
+*
+* @Author Filip Dutina
+* \notes
+*****************************************************************************/
+
 #include "stream_controller.h"
 #include "grafika.c"
 #include "tables_parser.c"
@@ -20,11 +44,12 @@ static uint32_t filterHandle = 0;
 static uint8_t threadExit = 0;
 static bool changeChannel = false;
 static int16_t programNumber = 0;
-static ChannelInfo currentChannel;
 static bool isInitialized = false;
 static uint32_t volumeNumber = 0;
 static bool muteIsPressed = false;
 static bool initialPowerOn = true;
+
+static ChannelInfo currentChannel;
 
 static struct timespec lockStatusWaitTime;
 static struct timeval now;
@@ -48,8 +73,6 @@ static streamControllerErrorCallback callback = NULL;
 
 StreamControllerError streamControllerInit()
 {
-	parseConfigFile();
-	
 	if(configFileIsValid())
 	{
 		printf("Config file is not valid!\n");
@@ -368,6 +391,7 @@ void startChannel(int32_t channelNumber)
     {
     	Player_Stream_Remove(playerHandle, sourceHandle, streamHandleV);
         streamHandleV = 0;
+        printf("pre funkcije za brisanje ekrana!\n");
         MV_PE_ClearScreen(playerHandle, 1);
         radioInit = true;
     }
@@ -639,9 +663,7 @@ StreamControllerError parseConfigFile()
 		}
 	}
 
-	fclose(file);
-
-	//printf("%d\n%d\n%s\n%d\n%d\n%s\n%s\n%d\n",desiredFrequency, bandwidth, module, audioPid, videoPid, audioType, videoType, programNumber);	
+	fclose(file);	
 
 	return SC_NO_ERROR;
 }

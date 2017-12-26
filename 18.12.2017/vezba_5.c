@@ -1,6 +1,30 @@
+/****************************************************************************
+*
+* Univerzitet u Novom Sadu, Fakultet tehnickih nauka
+* Katedra za Računarsku Tehniku i Računarske Komunikacije
+*
+* -----------------------------------------------------
+* Ispitni zadatak iz predmeta:
+*
+* PROGRAMSKA PODRSKA U TELEVIZIJI I OBRADI SLIKE
+* -----------------------------------------------------
+* Aplikacija za TV prijemnik
+* -----------------------------------------------------
+*
+* \file vezba_5.c
+* \brief
+* Main module u kome se vrse inicijalizacije i deinicijalizacije svih modula.
+* Decembar 2017
+*
+* @Author Filip Dutina
+* \notes
+*****************************************************************************/
+
 #include "remote_controller.h"
 #include "stream_controller.h"
 #include "grafika.c"
+
+#define ARG_NUMBER 2
 
 static inline void textColor(int32_t attr, int32_t fg, int32_t bg)
 {
@@ -29,8 +53,17 @@ static pthread_mutex_t deinitMutex = PTHREAD_MUTEX_INITIALIZER;
 static ChannelInfo channelInfo;
 static void errorCallback();
 
-int main()
+int main(int argc, char* argv[])
 {
+	/* Check if all program arguments are passed */
+	if (argc != ARG_NUMBER)
+	{
+		printf("\nERROR Missing program arguments!\n");
+		return 0;
+	}
+
+	ERRORCHECK(parseConfigFile(argv[1]));
+
 	/* initialize remote controller module */
     ERRORCHECK(remoteControllerInit());
     

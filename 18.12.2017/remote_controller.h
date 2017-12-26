@@ -1,3 +1,25 @@
+/****************************************************************************
+*
+* Univerzitet u Novom Sadu, Fakultet tehnickih nauka
+* Katedra za Računarsku Tehniku i Računarske Komunikacije
+*
+* -----------------------------------------------------
+* Ispitni zadatak iz predmeta:
+*
+* PROGRAMSKA PODRSKA U TELEVIZIJI I OBRADI SLIKE
+* -----------------------------------------------------
+* Aplikacija za TV prijemnik
+* -----------------------------------------------------
+*
+* \file remote_controller.h
+* \brief
+* 
+* Decembar 2017
+*
+* @Author Filip Dutina
+* \notes
+*****************************************************************************/
+
 #ifndef __REMOTE_CONTROLLER_H__
 #define __REMOTE_CONTROLLER_H__
 
