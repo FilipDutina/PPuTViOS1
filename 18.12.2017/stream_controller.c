@@ -303,7 +303,7 @@ void startChannel(int32_t channelNumber)
 	printf("pmt\n");
 	
 	printf("channelNumber: %d\n", channelNumber);
-	if(channelNumber < 5)
+	if(channelNumber < CHANNELS_WITH_VIDEO)
 	{
 		 /* free EIT table filter */
 		Demux_Free_Filter(playerHandle, filterHandle);

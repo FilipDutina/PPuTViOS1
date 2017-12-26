@@ -18,6 +18,8 @@
 
 #define CHANNEL_SERVICE_ID 489
 
+#define CHANNELS_WITH_VIDEO 5
+
 
 /* po defaultu utisano */
 static uint8_t volumeState = 0;

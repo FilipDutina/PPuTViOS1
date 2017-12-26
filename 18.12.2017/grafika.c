@@ -37,8 +37,7 @@ static int32_t screenWidth = 0;
 static int32_t screenHeight = 0;
 static int32_t program_count = 7;
 
-
-static ChannelInfo currentChannel;
+static ChannelInfo currentChannel;	//POPRAVI OVO!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 char ime[100];
 char opis[100];
@@ -166,15 +165,15 @@ void* renderLoop()
 		{
 			pthread_mutex_lock(&mutex);
 	
-				if(muteFlag)
-				{
-					drawVolumeState(0);
-				}
-				else
-				{
-					drawVolumeState(volumeState);
-				}
-				DFBCHECK(primary->Flip(primary, &audioBannerFlipRegion, 0));
+			if(muteFlag)
+			{
+				drawVolumeState(0);
+			}
+			else
+			{
+				drawVolumeState(volumeState);
+			}
+			DFBCHECK(primary->Flip(primary, &audioBannerFlipRegion, 0));
 
 			pthread_mutex_unlock(&mutex);
 		}
