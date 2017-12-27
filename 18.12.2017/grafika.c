@@ -45,6 +45,7 @@ static IDirectFBSurface *logo_surface[11];
 static DFBSurfaceDescription surfaceDesc;
 static DFBRegion audioBannerFlipRegion;
 static DFBRegion programInfoBannerFlipRegion;
+static DFBRegion radioBannerFlipRegion;
 
 static pthread_t renderLoopThread;
 static pthread_mutex_t fnpMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -134,6 +135,11 @@ void graphicInit()
 	audioBannerFlipRegion.x2 = screenWidth;
 	audioBannerFlipRegion.y2 = screenHeight/5 + 20;
 	
+	radioBannerFlipRegion.x1 = 000;
+	radioBannerFlipRegion.y1 = 0;
+	radioBannerFlipRegion.x2 = 400;
+	radioBannerFlipRegion.y2 = 200;
+	
 	graphicInitialized = 1;
 	
 	pthread_mutex_init(&mutex, NULL);
@@ -211,9 +217,9 @@ void* renderLoop()
 				
 			printf("CRTAJ INFO BANNER!\n");
 				
-			pthread_mutex_unlock(&mutex); 
+			pthread_mutex_unlock(&mutex);   
 			
-			radioInit = false;                           
+			radioInit = false;                        
 		}
 	}
 }
@@ -231,23 +237,11 @@ void wipeScreen()
 		                        /*rectangle width*/ 200,
 		                        /*rectangle height*/ 200));
 		                       
-	DFBCHECK(primary->Flip(primary, NULL, 0));
+	DFBCHECK(primary->Flip(primary, &radioBannerFlipRegion, 0));
 }
 
 void drawRadio()
 {
-    /* clear the screen before drawing anything (draw black full screen rectangle)*/
-    DFBCHECK(primary->SetColor(/*surface to draw on*/ primary,
-                               /*red*/ 0x00,
-                               /*green*/ 0x00,
-                               /*blue*/ 0x00,
-                               /*alpha*/ 0x00));	//alpha setovana na nulu
-    DFBCHECK(primary->FillRectangle(/*surface to draw on*/ primary,
-		                        /*upper left x coordinate*/ 0,
-		                        /*upper left y coordinate*/ 0,
-		                        /*rectangle width*/ screenWidth,
-		                        /*rectangle height*/ screenHeight));
-                                
   	/* draw text */
   	DFBCHECK(primary->SetColor(/*surface to draw on*/ primary,
                                /*red*/ 0xff,
