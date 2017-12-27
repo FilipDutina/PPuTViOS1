@@ -35,7 +35,6 @@ static struct sigevent programInfoSignalEvent;
 static struct itimerspec programInfoTimerSpec;
 static struct itimerspec programInfoTimerSpecOld;
 
-
 static IDirectFBSurface *primary = NULL;
 static IDirectFB *dfbInterface = NULL;
 static IDirectFBFont *fontInterface = NULL;
@@ -52,6 +51,7 @@ static pthread_mutex_t fnpMutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static void* renderLoop();
 
+/*flags*/
 static bool volumeInit = false;
 static bool infoBannerInit = false;
 static bool radioInit = false;
@@ -60,14 +60,13 @@ static int32_t screenWidth = 0;
 static int32_t screenHeight = 0;
 static int32_t program_count = 7;
 
-
+/*ime i opis emisije*/
 char ime[100];
 char opis[100];
 
 
 void graphicInit()
 {
-
 	volumeSignalEvent.sigev_notify = SIGEV_THREAD;
 	volumeSignalEvent.sigev_notify_function = (void*)volumeTimer;
 	volumeSignalEvent.sigev_value.sival_ptr = NULL;
@@ -95,7 +94,6 @@ void graphicInit()
 	surfaceDesc.caps = DSCAPS_PRIMARY | DSCAPS_FLIPPING;
 	DFBCHECK (dfbInterface->CreateSurface(dfbInterface, &surfaceDesc, &primary));
     
-    
     /* fetch the screen size */
     DFBCHECK (primary->GetSize(primary, &screenWidth, &screenHeight));
     
@@ -108,7 +106,7 @@ void graphicInit()
     
 	uint8_t i;
 	
-	for(i = 0;i <= 10; i++)
+	for(i = 0; i <= 10; i++)
 	{
 		char file_name[20];
 		sprintf(file_name,"volume_%u.png",i);
@@ -157,10 +155,8 @@ void graphicDeinit()
 
 }
 
-
 void* renderLoop()
 {
-
 	while(graphicInitialized)
 	{
 		pthread_mutex_lock(&mutex);
@@ -237,7 +233,6 @@ void wipeScreen()
 		                       
 	DFBCHECK(primary->Flip(primary, NULL, 0));
 }
-
 
 void drawRadio()
 {
@@ -378,7 +373,6 @@ static void* programInfoTimer()
 
 	return (void*)0;
 }
-
 
 static void* volumeTimer()
 {

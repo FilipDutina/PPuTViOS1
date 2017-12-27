@@ -413,6 +413,7 @@ ParseErrorCode parseEitElementaryInfo(const uint8_t* eitElementaryInfoBuffer, Ei
     
     k = 0;
     
+	//deskriptor
     if(eitElementaryInfo->runningStatus == 0x4)
     {
 		while(k < eitElementaryInfo->descriptorsLoopLength)

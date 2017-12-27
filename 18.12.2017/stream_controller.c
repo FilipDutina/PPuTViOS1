@@ -79,7 +79,7 @@ StreamControllerError streamControllerInit()
 		return SC_ERROR;
 	}
 	
-	graphicInit();
+	graphicInit();	//SREDI OVOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	
     if (pthread_create(&scThread, NULL, &streamControllerTask, NULL))
     {
